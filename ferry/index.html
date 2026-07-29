@@ -4,198 +4,865 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ferry — your Android phone, in Finder</title>
-<meta name="description" content="Mount an Android phone on your Mac and browse it in Finder like a USB drive. Free, no cloud, no account.">
+<meta name="description" content="Mount an Android phone on your Mac. Browse it in Finder, like a USB drive. Open files in place, no copying. Free, no cloud, no account.">
 <meta property="og:title" content="Ferry — your Android phone, in Finder">
-<meta property="og:description" content="Mount an Android phone on your Mac and browse it in Finder like a USB drive.">
+<meta property="og:description" content="Mount an Android phone on your Mac. Browse it in Finder, like a USB drive.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://ramanbanka.github.io/ferry/">
+<meta name="theme-color" content="#0b0f14">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2314b8a6'/%3E%3Crect x='10' y='7' width='12' height='18' rx='2.5' fill='%230b0f14'/%3E%3C/svg%3E">
 <style>
+  /* Teal-on-slate, deliberately not the blue/green of the tools Ferry is compared with.
+     Glass surfaces: translucent panels over a soft aurora, with a hairline top highlight
+     so edges read as lit rather than drawn. */
   :root {
-    --fg: #1d1d1f;
-    --muted: #6e6e73;
-    --line: #d2d2d7;
-    --bg: #fff;
-    --accent: #0071e3;
-    --code-bg: #f5f5f7;
+    --bg: #0b0f14;
+    --bg-2: #10161d;
+    --fg: #eef2f6;
+    --muted: #94a3b8;
+    --dim: #64748b;
+    --accent: #2dd4bf;
+    --accent-2: #22d3ee;
+    --accent-ink: #042f2e;
+    --warn: #fbbf24;
+
+    --glass: rgba(255, 255, 255, .045);
+    --glass-2: rgba(255, 255, 255, .07);
+    --edge: rgba(255, 255, 255, .10);
+    --edge-2: rgba(255, 255, 255, .16);
+    --lift: 0 1px 0 rgba(255, 255, 255, .07) inset;
+    --shadow: 0 18px 50px rgba(0, 0, 0, .45);
+
+    --r-sm: 10px;
+    --r: 16px;
+    --r-lg: 22px;
+    --wrap: 1120px;
   }
-  @media (prefers-color-scheme: dark) {
+  @media (prefers-color-scheme: light) {
     :root {
-      --fg: #f5f5f7; --muted: #a1a1a6; --line: #38383c;
-      --bg: #000; --accent: #2997ff; --code-bg: #1c1c1e;
+      --bg: #f6f8fb;
+      --bg-2: #ffffff;
+      --fg: #0f172a;
+      --muted: #55637a;
+      --dim: #7c8798;
+      --accent: #0d9488;
+      --accent-2: #0891b2;
+      --accent-ink: #ffffff;
+      --warn: #b45309;
+
+      --glass: rgba(255, 255, 255, .62);
+      --glass-2: rgba(255, 255, 255, .82);
+      --edge: rgba(15, 23, 42, .09);
+      --edge-2: rgba(15, 23, 42, .16);
+      --lift: 0 1px 0 rgba(255, 255, 255, .9) inset;
+      --shadow: 0 14px 40px rgba(15, 23, 42, .10);
     }
   }
+
   * { box-sizing: border-box; }
-  html { overflow-x: hidden; }
+  html {
+    overflow-x: hidden; scroll-behavior: smooth;
+    /* Sticky nav is ~53px; keep snapped headings and #anchor targets clear of it. */
+    scroll-padding-top: 72px;
+    scroll-snap-type: y proximity;
+  }
+  header.hero, section, footer { scroll-snap-align: start; scroll-snap-stop: normal; }
+  /* A section taller than the viewport must not be snapped to: the reader would
+     never reach its lower half. Opt those out at run time — see the script. */
+  header.hero.no-snap, section.no-snap, footer.no-snap { scroll-snap-align: none; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; scroll-snap-type: none; }
+    * { animation: none !important; transition: none !important; }
+  }
   body {
     margin: 0; background: var(--bg); color: var(--fg);
-    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
-  /* Long words — the tap name, volume names — must not push the page sideways on a
-     narrow screen. Cheaper and more reliable than a media query per breakpoint. */
-  h1, h2, h3, p, td, th, li { overflow-wrap: break-word; }
-  header { padding: 96px 0 72px; text-align: center; }
-  h1 { font-size: 56px; line-height: 1.07; letter-spacing: -.02em; margin: 0 0 16px; }
-  .tagline { font-size: 24px; color: var(--muted); margin: 0 auto 40px; max-width: 34ch; }
-  .install {
-    display: inline-block; max-width: 100%; text-align: left;
-    background: var(--code-bg); border-radius: 12px; padding: 20px 24px;
-    font-size: 15px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* The aurora sits behind everything and is what the glass panels refract. Fixed so it
+     does not scroll with content; pointer-events off so it never eats a click. */
+  body::before {
+    content: ""; position: fixed; inset: -20vh -10vw; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(42vw 42vw at 12% 4%,  color-mix(in oklab, var(--accent) 26%, transparent), transparent 62%),
+      radial-gradient(38vw 38vw at 88% 12%, color-mix(in oklab, var(--accent-2) 22%, transparent), transparent 62%),
+      radial-gradient(46vw 46vw at 50% 92%, color-mix(in oklab, var(--accent) 14%, transparent), transparent 66%);
+    filter: blur(30px) saturate(120%);
+    opacity: .5;
   }
-  /* A wrapped shell command is a command you cannot safely copy, so these lines never
-     wrap — they scroll instead. On a 320px screen the longest does not fit. */
-  .install div { white-space: nowrap; overflow-x: auto; }
-  .sub { color: var(--muted); font-size: 15px; margin-top: 20px; }
+  @supports not (background: color-mix(in oklab, red, blue)) {
+    body::before { background: radial-gradient(45vw 45vw at 15% 5%, rgba(45,212,191,.20), transparent 62%); }
+  }
+
+  h1, h2, h3 { letter-spacing: -.02em; line-height: 1.12; margin: 0; }
+  h1, h2, h3, p, li, td, th, dt, dd { overflow-wrap: break-word; }
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
-  section { padding: 56px 0; border-top: 1px solid var(--line); }
-  h2 { font-size: 32px; letter-spacing: -.01em; margin: 0 0 28px; }
-  .grid { display: grid; gap: 28px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-  .grid h3 { font-size: 17px; margin: 0 0 6px; }
-  .grid p { margin: 0; color: var(--muted); font-size: 15px; }
-  table { width: 100%; border-collapse: collapse; font-size: 15px; }
-  th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--line); }
-  th { font-weight: 600; }
-  td:first-child { color: var(--muted); }
-  .yes { font-weight: 600; }
-  figure { margin: 0 0 32px; }
-  figure svg { width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid var(--line); }
-  figcaption { color: var(--muted); font-size: 14px; margin-top: 10px; text-align: center; }
-  ol { padding-left: 22px; color: var(--muted); }
-  ol strong { color: var(--fg); }
-  footer { padding: 56px 0 80px; color: var(--muted); font-size: 14px; text-align: center; border-top: 1px solid var(--line); }
-  @media (max-width: 600px) {
-    header { padding: 64px 0 48px; }
-    h1 { font-size: 40px; }
-    .tagline { font-size: 20px; }
-    .install { font-size: 13px; }
+  code, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+
+  /* Horizontal only. A padding shorthand here would reset the vertical padding that
+     `section` sets, because the two selectors have the same specificity and this one
+     is declared later. That silently flattened every section gap to nothing. */
+  .wrap { max-width: var(--wrap); margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+  section { padding-top: 96px; padding-bottom: 96px; }
+  section + section { border-top: 1px solid var(--edge); }
+  .eyebrow {
+    display: inline-block; font-size: 12.5px; font-weight: 700; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 18px;
+  }
+  h2 { font-size: clamp(30px, 4vw, 44px); margin-bottom: 18px; }
+  .lead { color: var(--muted); font-size: 17.5px; max-width: 100%; margin: 0 0 44px; }
+
+  /* ---------- glass primitives ---------- */
+  .glass {
+    background: var(--glass);
+    border: 1px solid var(--edge);
+    border-radius: var(--r);
+    box-shadow: var(--lift);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    backdrop-filter: blur(20px) saturate(150%);
+  }
+
+  /* ---------- nav ---------- */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in oklab, var(--bg) 72%, transparent);
+    border-bottom: 1px solid var(--edge);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    backdrop-filter: blur(18px) saturate(150%);
+  }
+  .nav-in {
+    max-width: var(--wrap); margin: 0 auto; padding: 12px 24px;
+    display: flex; align-items: center; gap: 22px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 650; color: var(--fg); }
+  .brand:hover { text-decoration: none; }
+  .brand svg { display: block; }
+  .nav-links { margin-left: auto; display: flex; align-items: center; gap: 22px; }
+  .nav-links a { color: var(--muted); font-size: 14.5px; }
+  .nav-links a:hover { color: var(--fg); text-decoration: none; }
+  @media (max-width: 720px) { .nav-links .hide-sm { display: none; } }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 20px; border-radius: 999px; font-size: 15px; font-weight: 600;
+    border: 1px solid transparent; cursor: pointer;
+    transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+  }
+  .btn:hover { text-decoration: none; transform: translateY(-1px); }
+  .btn-primary {
+    color: var(--accent-ink);
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 8px 24px color-mix(in oklab, var(--accent) 32%, transparent);
+  }
+  .btn-primary:hover { box-shadow: 0 12px 30px color-mix(in oklab, var(--accent) 42%, transparent); }
+  .btn-ghost {
+    color: var(--fg); background: var(--glass); border-color: var(--edge-2);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  }
+  .btn-ghost:hover { background: var(--glass-2); }
+
+  /* ---------- hero ---------- */
+  header.hero { padding-top: 88px; padding-bottom: 0; text-align: center; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 999px; font-size: 13px; color: var(--muted);
+    background: var(--glass); border: 1px solid var(--edge);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    margin-bottom: 22px;
+  }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 22%, transparent);
+  }
+  h1 { font-size: clamp(30px, 4.2vw, 50px); max-width: 30ch; margin: 0 auto; }
+  h1 > span { display: block; text-wrap: balance; }
+  h1 .grad {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .tagline {
+    color: var(--muted); font-size: clamp(17px, 2vw, 20px);
+    max-width: 44ch; margin: 22px auto 32px; text-wrap: pretty;
+  }
+  .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 22px; }
+  .meta { color: var(--dim); font-size: 14px; }
+  .meta a { color: var(--muted); }
+
+  /* ---------- code block with inline comments ---------- */
+  .code {
+    text-align: left; margin: 56px auto 0; max-width: 620px; overflow: hidden;
+    border-radius: var(--r); border: 1px solid var(--edge); background: var(--glass);
+    box-shadow: var(--lift), var(--shadow);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    backdrop-filter: blur(20px) saturate(150%);
+  }
+  .code-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; border-bottom: 1px solid var(--edge);
+    font-size: 12px; color: var(--dim);
+  }
+  .tl { width: 10px; height: 10px; border-radius: 50%; background: var(--edge-2); }
+  .code pre {
+    margin: 0; padding: 16px 18px; overflow-x: auto;
+    font: 13.5px/1.9 ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .code .c { color: var(--dim); }              /* comment */
+  .code .p { color: var(--accent); }           /* prompt / command name */
+  .copy {
+    margin-left: auto; padding: 4px 12px; border-radius: 999px; font-size: 12px;
+    color: var(--muted); background: transparent; border: 1px solid var(--edge-2);
+    cursor: pointer; font-family: inherit;
+  }
+  .copy:hover { color: var(--fg); background: var(--glass-2); }
+
+  /* ---------- installation, two routes side by side ---------- */
+  .install-cols { display: grid; gap: 24px; grid-template-columns: 1fr 1fr; align-items: start; }
+  @media (max-width: 880px) { .install-cols { grid-template-columns: 1fr; } }
+  .route h3 { font-size: 17px; margin: 0 0 12px; display: flex; align-items: center; gap: 10px; min-height: 28px; }
+  .tag {
+    font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--accent); padding: 3px 9px; border-radius: 999px;
+    background: color-mix(in oklab, var(--accent) 15%, transparent);
+    border: 1px solid color-mix(in oklab, var(--accent) 28%, transparent);
+  }
+  .route-note { color: var(--muted); font-size: 14.5px; margin: 0 0 16px; min-height: 1.6em; }
+  /* In this grid the terminal fills its column rather than centring as a hero element. */
+  .route .code { margin: 0; max-width: none; }
+
+  /* ---------- feature cards ---------- */
+  .cards { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .card { padding: 26px; border-radius: var(--r); }
+  .card .ico {
+    width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center;
+    background: color-mix(in oklab, var(--accent) 16%, transparent);
+    border: 1px solid color-mix(in oklab, var(--accent) 26%, transparent);
+    margin-bottom: 14px; color: var(--accent);
+  }
+  .card h3 { font-size: 16.5px; margin-bottom: 6px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14.5px; }
+
+  /* ---------- comparison ---------- */
+  .tablewrap {
+    border-radius: var(--r); border: 1px solid var(--edge); background: var(--glass);
+    box-shadow: var(--lift); overflow-x: auto;
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    backdrop-filter: blur(20px) saturate(150%);
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; min-width: 940px; }
+  thead th {
+    text-align: left; padding: 16px; white-space: nowrap; font-size: 12.5px; font-weight: 700;
+    letter-spacing: .06em; text-transform: uppercase; color: var(--dim);
+    border-bottom: 1px solid var(--edge);
+    position: sticky; top: 0; background: var(--bg-2);
+  }
+  thead th.me {
+    color: var(--accent);
+    background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 14%, var(--bg-2)), var(--bg-2));
+  }
+  tbody td {
+    padding: 15px 16px; border-bottom: 1px solid var(--edge); color: var(--muted);
+    vertical-align: top; text-wrap: pretty;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody td:first-child { color: var(--fg); font-weight: 550; white-space: nowrap; }
+  td.me { color: var(--fg); background: color-mix(in oklab, var(--accent) 7%, transparent); font-weight: 600; }
+  .tick, .cross, .part { white-space: nowrap; }
+  .tick { color: var(--accent); font-weight: 700; }
+  .cross { color: var(--dim); }
+  .part { color: var(--warn); }
+  .legend { color: var(--dim); font-size: 14px; margin-top: 16px; max-width: 100%; }
+
+  /* ---------- steps ---------- */
+  .steps { display: grid; gap: 16px; counter-reset: s; }
+  .step { display: flex; gap: 18px; padding: 22px 24px; border-radius: var(--r); }
+  .step .n {
+    flex: 0 0 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
+    font-size: 13.5px; font-weight: 700; color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 15%, transparent);
+    border: 1px solid color-mix(in oklab, var(--accent) 26%, transparent);
+  }
+  .step h3 { font-size: 15.5px; margin-bottom: 4px; }
+  .step p { margin: 0; color: var(--muted); font-size: 14.5px; }
+
+  /* ---------- spec + faq ---------- */
+  .spec { display: grid; gap: 0; border-radius: var(--r); overflow: hidden; }
+  .spec div { display: flex; gap: 18px; padding: 17px 22px; border-bottom: 1px solid var(--edge); font-size: 14.5px; }
+  .spec div:last-child { border-bottom: 0; }
+  .spec dt, .spec b { flex: 0 0 132px; color: var(--dim); font-weight: 600; }
+  .spec span { color: var(--muted); }
+  .spec span strong { color: var(--fg); }
+
+  details.faq {
+    border-radius: var(--r-sm); margin-bottom: 10px; overflow: hidden;
+    background: var(--glass); border: 1px solid var(--edge);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  }
+  details.faq summary {
+    padding: 17px 22px; cursor: pointer; font-weight: 600; font-size: 15.5px;
+    list-style: none; display: flex; align-items: center; gap: 12px;
+  }
+  details.faq summary::-webkit-details-marker { display: none; }
+  details.faq summary::after {
+    content: "+"; margin-left: auto; color: var(--accent); font-weight: 700; font-size: 19px;
+  }
+  details.faq[open] summary::after { content: "\2212"; }
+  details.faq summary:hover { background: var(--glass-2); }
+  details.faq p { margin: 0; padding: 0 22px 19px; color: var(--muted); font-size: 15px; max-width: 100%; }
+
+  /* ---------- footer ---------- */
+  footer { padding-top: 56px; padding-bottom: 72px; border-top: 1px solid var(--edge); color: var(--dim); font-size: 14px; }
+  footer .cols { display: flex; gap: 40px; flex-wrap: wrap; margin-bottom: 30px; }
+  footer .col a { display: block; color: var(--muted); margin-bottom: 8px; font-size: 14px; }
+  footer .col b { display: block; color: var(--fg); font-size: 13px; margin-bottom: 12px; font-weight: 650; }
+
+  /* The mockup is a hero element, not prose — keep it to the same width as the code block
+     above it so the two read as a pair rather than the wider one looking unbounded. */
+  figure { margin: 0 auto; max-width: 1000px; }
+  figure svg { width: 100%; height: auto; display: block; border-radius: var(--r); border: 1px solid var(--edge); }
+  figcaption { color: var(--dim); font-size: 13.5px; margin-top: 12px; text-align: center; }
+
+  @media (max-width: 640px) {
+    section { padding-top: 64px; padding-bottom: 64px; }
+    header.hero { padding-top: 56px; }
+    .spec div { flex-direction: column; gap: 4px; }
+    .spec dt, .spec b { flex: none; }
   }
 </style>
 </head>
 <body>
 
-<header class="wrap">
-  <h1>Your Android phone,<br>in Finder.</h1>
-  <p class="tagline">Plug it in and it appears as a volume. Like a USB drive.</p>
-  <div class="install">
-    <div>brew tap ramanbanka/ferry</div>
-    <div>brew trust ramanbanka/ferry</div>
-    <div>brew install --cask ferry</div>
+<nav class="nav">
+  <div class="nav-in">
+    <a class="brand" href="#top">
+      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="url(#bg)"/>
+        <rect x="10" y="7" width="12" height="18" rx="2.5" fill="#0b0f14" opacity=".85"/>
+        <rect x="11.6" y="9" width="8.8" height="12.5" rx="1" fill="#2dd4bf" opacity=".9"/>
+        <defs><linearGradient id="bg" x1="0" y1="0" x2="32" y2="32">
+          <stop stop-color="#2dd4bf"/><stop offset="1" stop-color="#22d3ee"/>
+        </linearGradient></defs>
+      </svg>
+      Ferry
+    </a>
+    <div class="nav-links">
+      <a href="#why" class="hide-sm">Why Ferry</a>
+      <a href="#compare" class="hide-sm">Compare</a>
+      <a href="#setup" class="hide-sm">Setup</a>
+      <a href="#faq" class="hide-sm">FAQ</a>
+      <a href="https://github.com/ramanbanka/ferry-releases">GitHub</a>
+    </div>
   </div>
-  <p class="sub">
-    Free · macOS 11+ · Apple Silicon ·
-    <a href="https://github.com/ramanbanka/ferry-releases/releases">Direct download</a>
+</nav>
+
+<header class="hero wrap" id="top">
+  <span class="pill"><span class="dot"></span> Free forever · No cloud, no account</span>
+  <h1>
+    <span>Mount an Android phone on your Mac.</span>
+    <span>Browse it in Finder, <span class="grad">like a USB drive.</span></span>
+  </h1>
+  <p class="tagline">
+    No app to open, no files to copy first. Plug it in and it is simply there.
   </p>
+  <div class="cta">
+    <a class="btn btn-primary" href="#install">Install now</a>
+    <a class="btn btn-ghost" href="#why">How it works</a>
+  </div>
+  <p class="meta">
+    <!-- release.sh rewrites both. A stale version reads worse than none at all. -->
+    v<strong data-ferry-version>0.2.1</strong> ·
+    <span data-ferry-date>29 July 2026</span> ·
+    <a href="#requirements">Apple Silicon · macOS 11+</a>
+  </p>
+
 </header>
 
-<section class="wrap">
+<section class="wrap" style="padding-top:72px;padding-bottom:96px">
   <figure>
-    <!-- A drawing, not a screen capture. Deliberately simplified: it shows where the
-         phone lands in the sidebar, which is the one thing worth showing. The volume
-         names and sizes are from a real mount so nothing here is invented. -->
-    <svg viewBox="0 0 760 210" role="img"
+    <!-- A drawing, not a screen capture — said so in the caption. The volume names and
+         sizes come from a real mount, so nothing here is invented. -->
+    <svg viewBox="0 0 760 232" role="img"
          aria-label="Illustration of a Finder window. Under Locations in the sidebar,
-                     alongside Macintosh HD, are two volumes named SM_G781B and
-                     SM_G781B_SD_card. The first is selected and its folders are listed:
-                     Alarms, Android, DCIM, Documents, Download, Movies, Music,
-                     Pictures.">
+                     alongside Macintosh HD, are two volumes named MyAndroid and
+                     MyAndroid_SD_card. The first is selected and its folders are listed:
+                     Alarms, Android, DCIM, Documents, Download, Movies, Music, Pictures.">
       <defs>
         <style>
-          .win  { fill: var(--code-bg); }
-          .side { fill: var(--bg); opacity: .55; }
-          .bar  { fill: var(--line); opacity: .35; }
-          .lbl  { fill: var(--muted); font: 600 9px -apple-system, sans-serif;
-                  letter-spacing: .06em; }
-          .item { fill: var(--fg); font: 12px -apple-system, sans-serif; }
-          .dim  { fill: var(--muted); font: 12px -apple-system, sans-serif; }
-          .foot { fill: var(--muted); font: 11px -apple-system, sans-serif; }
-          .sel  { fill: var(--accent); opacity: .16; }
-          .vol  { fill: var(--accent); }
-          .disc { fill: var(--muted); opacity: .55; }
+          .w  { fill: var(--bg-2); }
+          .sd { fill: var(--glass); }
+          .br { fill: var(--edge); }
+          .lb { fill: var(--dim); font: 700 9px -apple-system, sans-serif; letter-spacing: .08em; }
+          .it { fill: var(--fg); font: 12px -apple-system, sans-serif; }
+          .ft { fill: var(--dim); font: 11px -apple-system, sans-serif; }
+          .sel { fill: var(--accent); opacity: .16; }
+          .vol { fill: var(--accent); }
+          .hd { fill: var(--dim); opacity: .5; }
         </style>
       </defs>
+      <rect class="w" x="0" y="0" width="760" height="232" rx="14"/>
+      <rect class="sd" x="0" y="0" width="216" height="232" rx="14"/>
+      <rect class="br" x="0" y="0" width="760" height="36" rx="14"/>
+      <rect class="br" x="0" y="26" width="760" height="10"/>
+      <circle cx="22" cy="18" r="5" class="hd"/>
+      <circle cx="40" cy="18" r="5" class="hd"/>
+      <circle cx="58" cy="18" r="5" class="hd"/>
+      <text class="ft" x="88" y="22" font-weight="650">Finder</text>
 
-      <rect class="win" x="0" y="0" width="760" height="210" rx="10"/>
-      <rect class="side" x="0" y="0" width="212" height="210" rx="10"/>
-      <rect class="bar" x="0" y="0" width="760" height="34" rx="10"/>
-      <rect class="bar" x="0" y="24" width="760" height="10"/>
-      <circle cx="20" cy="17" r="5" class="disc"/>
-      <circle cx="38" cy="17" r="5" class="disc"/>
-      <circle cx="56" cy="17" r="5" class="disc"/>
+      <text class="lb" x="22" y="70">LOCATIONS</text>
+      <rect class="hd" x="22" y="84" width="12" height="12" rx="3"/>
+      <text class="it" x="44" y="94">Macintosh HD</text>
 
-      <text class="lbl" x="20" y="66">LOCATIONS</text>
-      <rect class="disc" x="20" y="80" width="12" height="12" rx="2"/>
-      <text class="item" x="42" y="90">Macintosh HD</text>
+      <rect class="sel" x="10" y="108" width="196" height="26" rx="8"/>
+      <rect class="vol" x="22" y="115" width="12" height="12" rx="3"/>
+      <text class="it" x="44" y="125" font-weight="650">MyAndroid</text>
 
-      <rect class="sel" x="10" y="104" width="192" height="24" rx="6"/>
-      <rect class="vol" x="20" y="110" width="12" height="12" rx="2"/>
-      <text class="item" x="42" y="120" font-weight="600">SM_G781B</text>
+      <rect class="vol" x="22" y="146" width="12" height="12" rx="3"/>
+      <text class="it" x="44" y="156">MyAndroid_SD_card</text>
 
-      <rect class="vol" x="20" y="140" width="12" height="12" rx="2"/>
-      <text class="item" x="42" y="150">SM_G781B_SD_card</text>
-
-      <text class="item" x="244" y="70">Alarms</text>
-      <text class="item" x="244" y="98">Android</text>
-      <text class="item" x="244" y="126">DCIM</text>
-      <text class="item" x="244" y="154">Documents</text>
-      <text class="item" x="470" y="70">Download</text>
-      <text class="item" x="470" y="98">Movies</text>
-      <text class="item" x="470" y="126">Music</text>
-      <text class="item" x="470" y="154">Pictures</text>
-
-      <text class="foot" x="244" y="186">107 GB volume — 6.9 GB available</text>
+      <text class="it" x="250" y="74">Alarms</text>
+      <text class="it" x="250" y="102">Android</text>
+      <text class="it" x="250" y="130">DCIM</text>
+      <text class="it" x="250" y="158">Documents</text>
+      <text class="it" x="480" y="74">Download</text>
+      <text class="it" x="480" y="102">Movies</text>
+      <text class="it" x="480" y="130">Music</text>
+      <text class="it" x="480" y="158">Pictures</text>
+      <text class="ft" x="250" y="200">107 GB volume — 6.9 GB available</text>
     </svg>
-    <figcaption>
-      Where the phone turns up. An SD card becomes a second volume, with its own free
-      space. (An illustration, not a screenshot.)
-    </figcaption>
+    <figcaption>Plug the phone in and it shows up as an external volume — and its SD card as a second one — exactly as a USB flash drive would.</figcaption>
   </figure>
+</section>
 
-  <h2>It behaves like a drive</h2>
-  <div class="grid">
-    <div><h3>Open files in place</h3><p>Double-click and it opens in whatever app you already use. Nothing is copied first.</p></div>
-    <div><h3>Play video</h3><p>Scrub through a 4K clip straight off the phone.</p></div>
-    <div><h3>Edit and save</h3><p>⌘S writes back to the phone.</p></div>
-    <div><h3>Drag both ways</h3><p>Copy, move, rename, delete. Quick Look works.</p></div>
-    <div><h3>SD cards</h3><p>A memory card gets its own volume, with its own free space.</p></div>
-    <div><h3>Use the terminal</h3><p><code>cp</code>, <code>rsync</code>, <code>find</code>, <code>grep</code> all work.</p></div>
+<section class="wrap" id="why">
+  <span class="eyebrow">Why Ferry</span>
+  <h2>Nothing gets copied first</h2>
+  <p class="lead">
+    macOS does not treat an Android phone as a drive. Plugged in, it is a device you have
+    to talk to through some app's window — so every other tool gives you one. To open a file
+    you copy it to the Mac, wait, work on the copy, then copy it back, and now you have two
+    of everything. Ferry makes the phone a real volume instead, so your apps open and save
+    files on it directly, the way they would on any external drive.
+  </p>
+  <div class="cards">
+    <div class="card glass">
+      <div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2v7h7"/><path d="M4 5a2 2 0 0 1 2-2h7l7 7v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></svg></div>
+      <h3>Seamless</h3>
+      <p>It behaves as though you plugged in an external drive. Double-click and the file opens in whatever app you already use.</p>
+    </div>
+    <div class="card glass">
+      <div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m10 8 6 4-6 4z"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg></div>
+      <h3>Play 4K video</h3>
+      <p>Straight off the phone, no copying it over first. Skip to the middle and Ferry handles it.</p>
+    </div>
+    <div class="card glass">
+      <div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg></div>
+      <h3>Edit and save back</h3>
+      <p>⌘S writes to the phone. No second copy to keep track of, no re-upload step.</p>
+    </div>
+    <div class="card glass">
+      <div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M3 19h18"/></svg></div>
+      <h3>Copy, move, drag both ways</h3>
+      <p>Rename and delete too. Quick Look, tags and Get Info all behave normally.</p>
+    </div>
+    <div class="card glass">
+      <div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h4M6 14h2"/></svg></div>
+      <h3>SD card, separately</h3>
+      <p>A memory card mounts as its own volume showing its own free space — not merged into one.</p>
+    </div>
+    <div class="card glass">
+      <div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m4 17 6-5-6-5"/><path d="M12 19h8"/></svg></div>
+      <h3>Scriptable</h3>
+      <p><code>cp</code>, <code>rsync</code>, <code>find</code>, <code>grep</code> — it is a mount point, so everything works.</p>
+    </div>
   </div>
 </section>
 
-<section class="wrap">
-  <h2>Why it's different</h2>
-  <table>
-    <tr><th></th><th>Ferry</th><th>The others</th></tr>
-    <tr><td>Where files appear</td><td class="yes">A volume in Finder</td><td>Their own window</td></tr>
-    <tr><td>Works in every app</td><td class="yes">Yes</td><td>Copy it out first</td></tr>
-    <tr><td>Runs in the background</td><td class="yes">Plug in, it mounts</td><td>Launch the app</td></tr>
-    <tr><td>Cost</td><td class="yes">Free</td><td>Often paid to write</td></tr>
-  </table>
-  <p class="sub">
-    Nothing is uploaded. No cloud, no account, no app on the phone. Just the cable.
+<section class="wrap" id="compare">
+  <span class="eyebrow">Compare</span>
+  <h2>How it differs</h2>
+  <p class="lead">
+    Compared on things you can check yourself.
+  </p>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th class="me">Ferry</th>
+          <th><a href="https://openmtp.ganeshrvel.com/">OpenMTP</a></th>
+          <th>Android File Transfer</th>
+          <th><a href="https://www.macdroid.app/">MacDroid</a></th>
+          <th><a href="https://commander-one.com/">Commander One</a></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Cost</td>
+          <td class="me"><span class="tick">Free</span></td>
+          <td><span class="tick">Free</span></td>
+          <td><span class="tick">Free</span></td>
+          <td><span class="part">Paid tier</span></td>
+          <td><span class="part">Paid tier</span></td>
+        </tr>
+        <tr>
+          <td>Mounts in Finder</td>
+          <td class="me"><span class="tick">Yes</span></td>
+          <td><span class="cross">In its window</span></td>
+          <td><span class="cross">In its window</span></td>
+          <td><span class="tick">Yes</span></td>
+          <td><span class="cross">In its window</span></td>
+        </tr>
+        <tr>
+          <td>Speed</td>
+          <td class="me"><span class="tick">Very fast</span></td>
+          <td><span class="cross">Slow</span></td>
+          <td><span class="cross">Slow</span></td>
+          <td><span class="part">Fast to slow</span></td>
+          <td><span class="cross">Slow</span></td>
+        </tr>
+        <tr>
+          <td>Open in any app</td>
+          <td class="me"><span class="tick">Directly</span></td>
+          <td><span class="cross">Copy out first</span></td>
+          <td><span class="cross">Copy out first</span></td>
+          <td><span class="tick">Directly</span></td>
+          <td><span class="cross">Copy out first</span></td>
+        </tr>
+        <tr>
+          <td>Starts by itself</td>
+          <td class="me"><span class="tick">Plug in, it mounts</span></td>
+          <td><span class="cross">Launch the app</span></td>
+          <td><span class="cross">Launch the app</span></td>
+          <td><span class="cross">Launch the app</span></td>
+          <td><span class="cross">Launch the app</span></td>
+        </tr>
+        <tr>
+          <td>Terminal &amp; scripts</td>
+          <td class="me"><span class="tick">Yes</span></td>
+          <td><span class="cross">No</span></td>
+          <td><span class="cross">No</span></td>
+          <td><span class="tick">Yes</span></td>
+          <td><span class="cross">No</span></td>
+        </tr>
+        <tr>
+          <td>SD card</td>
+          <td class="me"><span class="tick">Own volume</span></td>
+          <td><span class="part">In-app</span></td>
+          <td><span class="part">In-app</span></td>
+          <td><span class="part">Not stated</span></td>
+          <td><span class="part">In-app</span></td>
+        </tr>
+        <tr>
+          <td>Driver or reboot</td>
+          <td class="me"><span class="tick">None</span></td>
+          <td><span class="tick">None</span></td>
+          <td><span class="tick">None</span></td>
+          <td><span class="part">System extension</span></td>
+          <td><span class="tick">None</span></td>
+        </tr>
+        <tr>
+          <td>Wireless</td>
+          <td class="me"><span class="tick">Yes*</span> <span style="color:var(--dim)">(soon)</span></td>
+          <td><span class="cross">No</span></td>
+          <td><span class="cross">No</span></td>
+          <td><span class="tick">Yes</span></td>
+          <td><span class="cross">No</span></td>
+        </tr>
+        <tr>
+          <td>macOS needed</td>
+          <td class="me">11+</td>
+          <td>10.10+</td>
+          <td><span class="cross">Discontinued</span></td>
+          <td>11.5+</td>
+          <td>10.13+</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="legend">
+    Because Ferry is a real mount point, anything that reads files works with it —
+    <code>rsync</code>, <code>cron</code>, Time&nbsp;Machine exclusions, your editor.
+    It needs no driver and no reboot to do that.
+  </p>
+  <p class="legend">
+    <strong style="color:var(--fg)">Why the speed differs:</strong> MTP, which the others
+    use, asks the phone for one file at a time — slow directory listings and a wait before
+    anything opens. Ferry uses ADB, and adds some very smart optimisations and caching on
+    top of it.
+  </p>
+  <p class="legend">
+    Rows are taken from each project's own documentation in July 2026 — check theirs before
+    deciding.
   </p>
 </section>
 
-<section class="wrap">
-  <h2>Setting up your phone</h2>
-  <ol>
-    <li><strong>Settings → About phone</strong> — tap <strong>Build number</strong> seven times</li>
-    <li><strong>Settings → Developer options</strong> — turn on <strong>USB debugging</strong></li>
-    <li>Plug in, unlock, and tap <strong>Allow</strong></li>
-  </ol>
-  <p class="sub">
-    Once only. That prompt is Android asking whether to trust this particular Mac.
+<section class="wrap" id="setup">
+  <span class="eyebrow">Setup</span>
+  <h2>Two minutes, once</h2>
+  <div class="steps">
+    <div class="step glass">
+      <div class="n">1</div>
+      <div>
+        <h3>Install Ferry</h3>
+        <p>Three lines in Terminal — see <a href="#install">Installation</a>. It brings adb along and starts Ferry at login from then on.</p>
+      </div>
+    </div>
+    <div class="step glass">
+      <div class="n">2</div>
+      <div>
+        <h3>Turn on developer options — on the phone</h3>
+        <p><b>Settings → About phone</b>, then tap <b>Build number</b> seven times.</p>
+      </div>
+    </div>
+    <div class="step glass">
+      <div class="n">3</div>
+      <div>
+        <h3>Turn on USB debugging</h3>
+        <p><b>Settings → Developer options → USB debugging</b>. This is how Ferry reads the phone; no app is installed on it.</p>
+      </div>
+    </div>
+    <div class="step glass">
+      <div class="n">4</div>
+      <div>
+        <h3>Plug in and tap Allow</h3>
+        <p>Unlock the phone and accept <b>“Allow USB debugging?”</b> — Android asking whether to trust this Mac. It appears in Finder within a second or two.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="requirements">
+  <span class="eyebrow">Requirements</span>
+  <h2>What you need</h2>
+  <div class="spec glass">
+    <div><b>Mac</b><span><strong>Apple Silicon only</strong> — M1 or later. Intel Macs are not supported.</span></div>
+    <div><b>macOS</b><span>11 Big Sur or newer</span></div>
+    <div><b>Phone</b><span>Any Android with USB debugging. No need to install anything on your phone.</span></div>
+    <div><b>Cable</b><span>One that carries data — many USB-C cables only charge.</span></div>
+  </div>
+</section>
+
+<section class="wrap" id="install">
+  <span class="eyebrow">Installation</span>
+  <h2>Two ways in</h2>
+  <p class="lead">
+    Homebrew is the one to pick unless you have a reason not to: it brings adb along and
+    updates Ferry with everything else on your Mac.
   </p>
+  <div class="install-cols">
+    <div class="route">
+      <h3>With Homebrew <span class="tag">Recommended</span></h3>
+      <p class="route-note">Three lines, then you are done:</p>
+      <div class="code">
+    <div class="code-bar">
+      <span class="tl"></span><span class="tl"></span><span class="tl"></span>
+      <span style="margin-left:6px">Terminal</span>
+      <button class="copy" type="button" data-copy>Copy</button>
+    </div>
+<pre><code><span class="c"># Point Homebrew at Ferry's tap</span>
+<span class="p">brew</span> tap ramanbanka/ferry
+
+<span class="c"># Trust the tap — needed once per Mac</span>
+<span class="p">brew</span> trust ramanbanka/ferry
+
+<span class="c"># Installs dependencies, sets Ferry to start at login</span>
+<span class="p">brew</span> install --cask ferry</code></pre>
+</div>
+    </div>
+    <div class="route">
+      <h3>Manually</h3>
+      <p class="route-note">
+        Install Android Platform Tools
+        (<code>brew install --cask android-platform-tools</code>), take the tarball from
+        <a href="https://github.com/ramanbanka/ferry-releases/releases">Releases</a>, then:
+      </p>
+      <div class="code">
+    <div class="code-bar">
+      <span class="tl"></span><span class="tl"></span><span class="tl"></span>
+      <span style="margin-left:6px">Terminal</span>
+      <button class="copy" type="button" data-copy>Copy</button>
+    </div>
+<pre><code><span class="p">cd</span> ~/Downloads
+<span class="p">tar</span> -xzf ferry-*-macos-arm64.tar.gz
+
+<span class="c"># Put it where the shell can find it</span>
+<span class="p">sudo</span> install -m 755 ferry-*-macos-arm64/ferry /usr/local/bin/ferry
+
+<span class="c"># Clear the flag macOS puts on browser downloads —</span>
+<span class="c"># without this the binary is killed, not just warned about</span>
+<span class="p">xattr</span> -d com.apple.quarantine /usr/local/bin/ferry || true
+
+<span class="c"># Enable Ferry to start automatically at every login</span>
+<span class="p">ferry</span> enable</code></pre>
+  </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="faq">
+  <span class="eyebrow">FAQ</span>
+  <h2>Questions</h2>
+
+  <details class="faq"><summary>Is it really free?</summary>
+    <p>Yes, and it stays that way. No paid tier, no trial, no feature held back.</p></details>
+
+  <details class="faq"><summary>Why isn't it open source?</summary>
+    <p>It may be one day; it isn't yet. The binary is free to use either way. If that rules
+    it out for you, <a href="https://openmtp.ganeshrvel.com/">OpenMTP</a> is open source and
+    worth a look.</p></details>
+
+  <details class="faq"><summary>Why do I need a custom tap and <code>brew trust</code>?</summary>
+    <p>
+      Because Ferry is not in Homebrew's own cask repository yet. Anything not in it has to
+      be published as a <em>tap</em> — a third-party source you add yourself — which is what
+      <code>brew tap ramanbanka/ferry</code> does. <code>brew trust</code> is then Homebrew
+      asking whether you are happy for it to run that tap's install steps, which it needs to
+      because installing Ferry registers a background agent rather than just copying a file
+      into place. Both are once per Mac.
+    </p>
+    <p>
+      Getting into the main repository takes more than working software: Homebrew asks for a
+      project to be at least 30 days old and to show public interest beyond its author. Ferry
+      is newer than that, so the tap is where it lives for now — and once it is accepted,
+      <code>brew install --cask ferry</code> will work on its own.
+    </p></details>
+
+  <details class="faq"><summary>Is it signed by Apple?</summary>
+    <p>Not yet — that needs a paid Apple Developer account. Homebrew installs work because
+    the cask clears the download flag for you; a browser download needs the
+    <code>xattr</code> line above. Ferry never asks you to turn off Gatekeeper or SIP.</p></details>
+
+  <details class="faq"><summary>Does anything leave my Mac?</summary>
+    <p>No. Ferry talks to the phone over the cable and serves the files to Finder on your own
+    machine. No account, no cloud, and no telemetry in the app. Homebrew counts installs if
+    you have its analytics switched on, which is between you and Homebrew.</p></details>
+
+  <details class="faq"><summary>How is it faster than the alternatives?</summary>
+    <p>Two reasons. Most alternatives speak MTP, which asks the phone for one file at a
+    time — that is why directory listings crawl and everything waits. Ferry uses ADB, the
+    channel Android's own developer tools run on, and adds its own optimisations and
+    caching on top. It also does less: copy-based tools move a whole file before you can
+    touch it, while Ferry serves the bytes an app actually asks for, so opening or seeking
+    in a large file does not wait on the rest of it.</p></details>
+
+  <details class="faq"><summary>Wireless?</summary>
+    <p>Not yet. USB only for now.</p></details>
+
+  <details class="faq"><summary>Will it drain the battery or slow the phone?</summary>
+    <p>Ferry reads and writes only when something asks it to. Idle, it does nothing but check
+    whether the phone is still attached — and the phone charges while plugged in.</p></details>
+
+  <details class="faq"><summary>What if I unplug it mid-copy?</summary>
+    <p>That transfer fails and Finder says so. Ferry unmounts the volume and waits; plug the
+    phone back in and it returns on its own. Anything already written stays written.</p></details>
+
+  <details class="faq"><summary>How do I remove it?</summary>
+    <p>
+      If you installed with Homebrew, run <code>"brew uninstall --cask ferry"</code>. It
+      stops the agent and unmounts your phone before removing anything.
+    </p>
+    <p>
+      If you installed manually, run <code>"ferry disable"</code> first, then delete
+      <code>"/usr/local/bin/ferry"</code>.
+    </p></details>
 </section>
 
 <footer class="wrap">
-  <a href="https://github.com/ramanbanka/ferry-releases">GitHub</a> ·
-  <a href="https://github.com/ramanbanka/ferry-releases/releases">Releases</a> ·
-  <a href="https://github.com/ramanbanka/ferry-releases/blob/mainline/CHANGELOG.md">Changelog</a> ·
-  <a href="https://github.com/ramanbanka/ferry-releases/issues">Report a bug</a>
-  <br><br>
-  Free to use. Not open source.
+  <div class="cols">
+    <div class="col">
+      <b>Ferry</b>
+      <a href="#why">Why Ferry</a>
+      <a href="#compare">Compare</a>
+      <a href="#setup">Setup</a>
+      <a href="#requirements">Requirements</a>
+    </div>
+    <div class="col">
+      <b>Project</b>
+      <a href="https://github.com/ramanbanka/ferry-releases">GitHub</a>
+      <a href="https://github.com/ramanbanka/ferry-releases/releases">Releases</a>
+      <a href="https://github.com/ramanbanka/ferry-releases/blob/mainline/CHANGELOG.md">Changelog</a>
+      <a href="https://github.com/ramanbanka/ferry-releases/issues">Report a bug</a>
+    </div>
+    <div class="col">
+      <b>Good to know</b>
+      <span style="color:var(--dim);font-size:14px;display:block;max-width:30ch">
+        Every release is written up in the changelog, including what broke and why.
+        Free to use, not open source.
+      </span>
+    </div>
+  </div>
+  © 2026 Raman Banka
 </footer>
+
+<script>
+  // Scroll snapping is only pleasant for sections that fit. Anything taller than the
+  // viewport opts out, or the reader gets pulled back to its top while trying to read the
+  // bottom. Re-measured on resize because the threshold moves with the window.
+  const snapTargets = document.querySelectorAll('header.hero, section, footer');
+  const remeasure = () => {
+    for (const el of snapTargets) {
+      el.classList.toggle('no-snap', el.offsetHeight > window.innerHeight * 0.92);
+    }
+  };
+  remeasure();
+  let t;
+  window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(remeasure, 150); });
+
+  // Heights are not final at load: webfonts settle and the version fetch below can reflow
+  // the hero. Measuring once left the hero snapping at 876px inside an 813px viewport.
+  // ResizeObserver catches every later change; the fallback covers browsers without it.
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(() => { clearTimeout(t); t = setTimeout(remeasure, 100); });
+    for (const el of snapTargets) ro.observe(el);
+  } else {
+    setTimeout(remeasure, 1200);
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
+
+  // Show the current release, asked of GitHub rather than baked in. The markup carries the
+  // version release.sh wrote, so the page is still correct with JavaScript off or if this
+  // request fails — this only ever replaces a correct value with a fresher one.
+  (async () => {
+    const v = document.querySelector('[data-ferry-version]');
+    const d = document.querySelector('[data-ferry-date]');
+    if (!v) return;
+    try {
+      const r = await fetch('https://api.github.com/repos/ramanbanka/ferry-releases/releases/latest',
+                            { headers: { Accept: 'application/vnd.github+json' } });
+      if (!r.ok) return;                       // rate-limited or offline: keep what we have
+      const j = await r.json();
+      const tag = (j.tag_name || '').replace(/^v/, '');
+      if (/^\d+\.\d+\.\d+/.test(tag)) v.textContent = tag;
+      if (d && j.published_at) {
+        d.textContent = new Date(j.published_at)
+          .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      }
+    } catch { /* nothing to do: the baked-in value is already correct */ }
+  })();
+
+  // Copy the commands without the explanatory comments — comments are there to be read,
+  // not pasted, and a stray # line in someone's shell history is noise.
+  for (const btn of document.querySelectorAll('[data-copy]')) {
+    btn.addEventListener('click', async () => {
+      const pre = btn.closest('.code').querySelector('pre');
+      const text = [...pre.querySelectorAll('code')]
+        .map(c => c.textContent).join('\n')
+        .split('\n')
+        .filter(l => l.trim() && !l.trim().startsWith('#'))
+        .join('\n');
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = 'Copied';
+      } catch {
+        btn.textContent = 'Press ⌘C';   // clipboard blocked, e.g. over file://
+      }
+      setTimeout(() => { btn.textContent = 'Copy'; }, 1600);
+    });
+  }
+</script>
 
 </body>
 </html>
