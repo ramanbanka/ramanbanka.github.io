@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ferry — your Android phone, in Finder</title>
+<meta name="description" content="Mount an Android phone on your Mac and browse it in Finder like a USB drive. Free, no cloud, no account.">
+<meta property="og:title" content="Ferry — your Android phone, in Finder">
+<meta property="og:description" content="Mount an Android phone on your Mac and browse it in Finder like a USB drive.">
+<meta property="og:type" content="website">
+<style>
+  :root {
+    --fg: #1d1d1f;
+    --muted: #6e6e73;
+    --line: #d2d2d7;
+    --bg: #fff;
+    --accent: #0071e3;
+    --code-bg: #f5f5f7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fg: #f5f5f7; --muted: #a1a1a6; --line: #38383c;
+      --bg: #000; --accent: #2997ff; --code-bg: #1c1c1e;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { overflow-x: hidden; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+  /* Long words — the tap name, volume names — must not push the page sideways on a
+     narrow screen. Cheaper and more reliable than a media query per breakpoint. */
+  h1, h2, h3, p, td, th, li { overflow-wrap: break-word; }
+  header { padding: 96px 0 72px; text-align: center; }
+  h1 { font-size: 56px; line-height: 1.07; letter-spacing: -.02em; margin: 0 0 16px; }
+  .tagline { font-size: 24px; color: var(--muted); margin: 0 auto 40px; max-width: 34ch; }
+  .install {
+    display: inline-block; max-width: 100%; text-align: left;
+    background: var(--code-bg); border-radius: 12px; padding: 20px 24px;
+    font-size: 15px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  /* A wrapped shell command is a command you cannot safely copy, so these lines never
+     wrap — they scroll instead. On a 320px screen the longest does not fit. */
+  .install div { white-space: nowrap; overflow-x: auto; }
+  .sub { color: var(--muted); font-size: 15px; margin-top: 20px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  section { padding: 56px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 32px; letter-spacing: -.01em; margin: 0 0 28px; }
+  .grid { display: grid; gap: 28px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .grid h3 { font-size: 17px; margin: 0 0 6px; }
+  .grid p { margin: 0; color: var(--muted); font-size: 15px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--line); }
+  th { font-weight: 600; }
+  td:first-child { color: var(--muted); }
+  .yes { font-weight: 600; }
+  figure { margin: 0 0 32px; }
+  figure svg { width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid var(--line); }
+  figcaption { color: var(--muted); font-size: 14px; margin-top: 10px; text-align: center; }
+  ol { padding-left: 22px; color: var(--muted); }
+  ol strong { color: var(--fg); }
+  footer { padding: 56px 0 80px; color: var(--muted); font-size: 14px; text-align: center; border-top: 1px solid var(--line); }
+  @media (max-width: 600px) {
+    header { padding: 64px 0 48px; }
+    h1 { font-size: 40px; }
+    .tagline { font-size: 20px; }
+    .install { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <h1>Your Android phone,<br>in Finder.</h1>
+  <p class="tagline">Plug it in and it appears as a volume. Like a USB drive.</p>
+  <div class="install">
+    <div>brew tap ramanbanka/ferry</div>
+    <div>brew trust ramanbanka/ferry</div>
+    <div>brew install --cask ferry</div>
+  </div>
+  <p class="sub">
+    Free · macOS 11+ · Apple Silicon ·
+    <a href="https://github.com/ramanbanka/ferry-releases/releases">Direct download</a>
+  </p>
+</header>
+
+<section class="wrap">
+  <figure>
+    <!-- A drawing, not a screen capture. Deliberately simplified: it shows where the
+         phone lands in the sidebar, which is the one thing worth showing. The volume
+         names and sizes are from a real mount so nothing here is invented. -->
+    <svg viewBox="0 0 760 210" role="img"
+         aria-label="Illustration of a Finder window. Under Locations in the sidebar,
+                     alongside Macintosh HD, are two volumes named SM_G781B and
+                     SM_G781B_SD_card. The first is selected and its folders are listed:
+                     Alarms, Android, DCIM, Documents, Download, Movies, Music,
+                     Pictures.">
+      <defs>
+        <style>
+          .win  { fill: var(--code-bg); }
+          .side { fill: var(--bg); opacity: .55; }
+          .bar  { fill: var(--line); opacity: .35; }
+          .lbl  { fill: var(--muted); font: 600 9px -apple-system, sans-serif;
+                  letter-spacing: .06em; }
+          .item { fill: var(--fg); font: 12px -apple-system, sans-serif; }
+          .dim  { fill: var(--muted); font: 12px -apple-system, sans-serif; }
+          .foot { fill: var(--muted); font: 11px -apple-system, sans-serif; }
+          .sel  { fill: var(--accent); opacity: .16; }
+          .vol  { fill: var(--accent); }
+          .disc { fill: var(--muted); opacity: .55; }
+        </style>
+      </defs>
+
+      <rect class="win" x="0" y="0" width="760" height="210" rx="10"/>
+      <rect class="side" x="0" y="0" width="212" height="210" rx="10"/>
+      <rect class="bar" x="0" y="0" width="760" height="34" rx="10"/>
+      <rect class="bar" x="0" y="24" width="760" height="10"/>
+      <circle cx="20" cy="17" r="5" class="disc"/>
+      <circle cx="38" cy="17" r="5" class="disc"/>
+      <circle cx="56" cy="17" r="5" class="disc"/>
+
+      <text class="lbl" x="20" y="66">LOCATIONS</text>
+      <rect class="disc" x="20" y="80" width="12" height="12" rx="2"/>
+      <text class="item" x="42" y="90">Macintosh HD</text>
+
+      <rect class="sel" x="10" y="104" width="192" height="24" rx="6"/>
+      <rect class="vol" x="20" y="110" width="12" height="12" rx="2"/>
+      <text class="item" x="42" y="120" font-weight="600">SM_G781B</text>
+
+      <rect class="vol" x="20" y="140" width="12" height="12" rx="2"/>
+      <text class="item" x="42" y="150">SM_G781B_SD_card</text>
+
+      <text class="item" x="244" y="70">Alarms</text>
+      <text class="item" x="244" y="98">Android</text>
+      <text class="item" x="244" y="126">DCIM</text>
+      <text class="item" x="244" y="154">Documents</text>
+      <text class="item" x="470" y="70">Download</text>
+      <text class="item" x="470" y="98">Movies</text>
+      <text class="item" x="470" y="126">Music</text>
+      <text class="item" x="470" y="154">Pictures</text>
+
+      <text class="foot" x="244" y="186">107 GB volume — 6.9 GB available</text>
+    </svg>
+    <figcaption>
+      Where the phone turns up. An SD card becomes a second volume, with its own free
+      space. (An illustration, not a screenshot.)
+    </figcaption>
+  </figure>
+
+  <h2>It behaves like a drive</h2>
+  <div class="grid">
+    <div><h3>Open files in place</h3><p>Double-click and it opens in whatever app you already use. Nothing is copied first.</p></div>
+    <div><h3>Play video</h3><p>Scrub through a 4K clip straight off the phone.</p></div>
+    <div><h3>Edit and save</h3><p>⌘S writes back to the phone.</p></div>
+    <div><h3>Drag both ways</h3><p>Copy, move, rename, delete. Quick Look works.</p></div>
+    <div><h3>SD cards</h3><p>A memory card gets its own volume, with its own free space.</p></div>
+    <div><h3>Use the terminal</h3><p><code>cp</code>, <code>rsync</code>, <code>find</code>, <code>grep</code> all work.</p></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Why it's different</h2>
+  <table>
+    <tr><th></th><th>Ferry</th><th>The others</th></tr>
+    <tr><td>Where files appear</td><td class="yes">A volume in Finder</td><td>Their own window</td></tr>
+    <tr><td>Works in every app</td><td class="yes">Yes</td><td>Copy it out first</td></tr>
+    <tr><td>Runs in the background</td><td class="yes">Plug in, it mounts</td><td>Launch the app</td></tr>
+    <tr><td>Cost</td><td class="yes">Free</td><td>Often paid to write</td></tr>
+  </table>
+  <p class="sub">
+    Nothing is uploaded. No cloud, no account, no app on the phone. Just the cable.
+  </p>
+</section>
+
+<section class="wrap">
+  <h2>Setting up your phone</h2>
+  <ol>
+    <li><strong>Settings → About phone</strong> — tap <strong>Build number</strong> seven times</li>
+    <li><strong>Settings → Developer options</strong> — turn on <strong>USB debugging</strong></li>
+    <li>Plug in, unlock, and tap <strong>Allow</strong></li>
+  </ol>
+  <p class="sub">
+    Once only. That prompt is Android asking whether to trust this particular Mac.
+  </p>
+</section>
+
+<footer class="wrap">
+  <a href="https://github.com/ramanbanka/ferry-releases">GitHub</a> ·
+  <a href="https://github.com/ramanbanka/ferry-releases/releases">Releases</a> ·
+  <a href="https://github.com/ramanbanka/ferry-releases/blob/mainline/CHANGELOG.md">Changelog</a> ·
+  <a href="https://github.com/ramanbanka/ferry-releases/issues">Report a bug</a>
+  <br><br>
+  Free to use. Not open source.
+</footer>
+
+</body>
+</html>
