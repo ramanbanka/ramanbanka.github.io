@@ -717,7 +717,7 @@
     it out for you, <a href="https://openmtp.ganeshrvel.com/">OpenMTP</a> is open source and
     worth a look.</p></details>
 
-  <details class="faq"><summary>Why do I need a custom tap and <code>brew trust</code>?</summary>
+  <details class="faq"><summary>Why do I need a custom tap and "brew trust"?</summary>
     <p>
       Because Ferry is not in Homebrew's own cask repository yet. Anything not in it has to
       be published as a <em>tap</em> — a third-party source you add yourself — which is what
@@ -733,15 +733,21 @@
       <code>brew install --cask ferry</code> will work on its own.
     </p></details>
 
-  <details class="faq"><summary>Is it signed by Apple?</summary>
-    <p>Not yet — that needs a paid Apple Developer account. Homebrew installs work because
-    the cask clears the download flag for you; a browser download needs the
-    <code>xattr</code> line above. Ferry never asks you to turn off Gatekeeper or SIP.</p></details>
+  <details class="faq"><summary>Is it signed/trusted by Apple?</summary>
+    <p>Not yet — that needs Apple's Developer ID, which costs $99 a year and I haven't
+    justified it for a brand-new free tool. If Ferry gets traction I'll buy it and this
+    friction goes away. Homebrew installs work because the cask clears the download flag for
+    you; a browser download needs the <code>xattr</code> line above. Ferry never asks you to
+    turn off Gatekeeper or SIP.</p></details>
 
   <details class="faq"><summary>Does anything leave my Mac?</summary>
-    <p>No. Ferry talks to the phone over the cable and serves the files to Finder on your own
-    machine. No account, no cloud, and no telemetry in the app. Homebrew counts installs if
-    you have its analytics switched on, which is between you and Homebrew.</p></details>
+    <p>No. Ferry talks to the phone over the cable and serves the files to Finder on your
+    own machine. No account, no cloud, and no telemetry in the app.</p>
+    <p>
+      Don't take my word for it — you can watch Ferry's network activity yourself with
+      <a href="https://obdev.at/products/littlesnitch/">Little Snitch</a> or
+      <a href="https://objective-see.org/products/lulu.html">LuLu</a>.
+    </p></details>
 
   <details class="faq"><summary>How is it faster than the alternatives?</summary>
     <p>Two reasons. Most alternatives speak MTP, which asks the phone for one file at a
