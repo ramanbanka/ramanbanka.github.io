@@ -66,10 +66,20 @@
     scroll-padding-top: 72px;
     scroll-snap-type: y proximity;
   }
-  header.hero, section, footer { scroll-snap-align: start; scroll-snap-stop: normal; }
-  /* A section taller than the viewport must not be snapped to: the reader would
-     never reach its lower half. Opt those out at run time — see the script. */
-  header.hero.no-snap, section.no-snap, footer.no-snap { scroll-snap-align: none; }
+  /* One snap point per section, at its top. Crossing a boundary lands on the next heading
+     rather than halfway into it.
+     `start` puts the point at the top only, so a section taller than the viewport still
+     scrolls freely through its own body — there is nothing below the top to be pulled back
+     to. An earlier version stripped the snap point entirely from any section over 92% of the
+     viewport, which removed it from exactly the long sections whose boundaries matter most
+     (Compare, FAQ) and read as snapping being broken.
+     `proximity` with the default `snap-stop`, deliberately: it behaves as gravity near a
+     boundary and leaves scrolling within a section alone. `mandatory` + `always` forced a stop
+     at every boundary crossed, which reads as a rail rather than a hint and makes a long
+     section tiring to read through. */
+  header.hero, section, footer { scroll-snap-align: start; }
+  /* Opt a block out of snapping when it reads as part of its neighbour. */
+  .no-snap { scroll-snap-align: none; }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; scroll-snap-type: none; }
     * { animation: none !important; transition: none !important; }
@@ -78,7 +88,10 @@
     margin: 0; background: var(--bg); color: var(--fg);
     font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
+    /* No `overflow-x: hidden` here. It makes body a scroll container, so the document scrolls
+       body rather than the root — and `scroll-snap-type` on `html` then governs an element
+       that no longer scrolls, which is why snapping did nothing at all. `html` already clips
+       the x axis, so this was redundant as well as harmful. */
   }
   /* The aurora sits behind everything and is what the glass panels refract. Fixed so it
      does not scroll with content; pointer-events off so it never eats a click. */
@@ -100,13 +113,29 @@
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
   code, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; }
+
+  /* A command the reader is being told to run, as against one merely named.
+     `ferry status` in "run ferry status" is an instruction and gets the tint; `rsync` in a list
+     of tools that happen to work is not, and stays plain monospace. Tinting both would make the
+     page look like it wants you at a terminal, which is the opposite of the pitch.
+     Never combine with quotes — the tint already marks where the command starts and ends. */
+  code.cmd {
+    padding: 1.5px 6px; border-radius: 5px;
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+    border: 1px solid color-mix(in oklab, var(--accent) 22%, transparent);
+    color: color-mix(in oklab, var(--accent) 72%, var(--fg));
+    white-space: nowrap;
+  }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
 
   /* Horizontal only. A padding shorthand here would reset the vertical padding that
      `section` sets, because the two selectors have the same specificity and this one
      is declared later. That silently flattened every section gap to nothing. */
   .wrap { max-width: var(--wrap); margin: 0 auto; padding-left: 24px; padding-right: 24px; }
-  section { padding-top: 96px; padding-bottom: 96px; }
+  /* 96 + 96 put 192px between two sections, which reads as a gap rather than a rhythm — and
+     snapping makes it worse, since a snapped heading sits below a screenful of nothing.
+     64 + 64 keeps the sections distinct at half the cost. */
+  section { padding-top: 64px; padding-bottom: 64px; }
   section + section { border-top: 1px solid var(--edge); }
   .eyebrow {
     display: inline-block; font-size: 12.5px; font-weight: 700; letter-spacing: .14em;
@@ -166,7 +195,10 @@
   .btn-ghost:hover { background: var(--glass-2); }
 
   /* ---------- hero ---------- */
-  header.hero { padding-top: 88px; padding-bottom: 0; text-align: center; }
+  /* 56, not 88: the nav is sticky and ~53px tall, so this padding stacks on top of it. At 88
+     the headline started 141px down a fresh page. Bottom stays 0 — the illustration below is
+     part of the hero and carries the gap between them. */
+  header.hero { padding-top: 56px; padding-bottom: 0; text-align: center; }
   .pill {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 6px 14px; border-radius: 999px; font-size: 13px; color: var(--muted);
@@ -296,6 +328,23 @@
   .spec span { color: var(--muted); }
   .spec span strong { color: var(--fg); }
 
+  /* A trade-off the reader should weigh before choosing Wi-Fi. It was a `.legend` — the same
+     dim footnote style the comparison table uses for provenance — which is right for "rows come
+     from each project's docs" and wrong for "this is several times slower". Tinted with --warn
+     and given a left rule so it reads as something to take in, not a fault: nothing is broken,
+     wireless simply costs speed. */
+  .tradeoff {
+    margin-top: 26px; padding: 18px 22px;
+    border: 1px solid color-mix(in oklab, var(--warn) 30%, transparent);
+    border-left: 3px solid var(--warn);
+    border-radius: var(--r-sm);
+    background: color-mix(in oklab, var(--warn) 7%, transparent);
+    font-size: 14.5px; color: var(--muted);
+  }
+  .tradeoff b { color: var(--fg); }
+  .tradeoff p { margin: 0; }
+  .tradeoff p + p { margin-top: 9px; }
+
   details.faq {
     border-radius: var(--r-sm); margin-bottom: 10px; overflow: hidden;
     background: var(--glass); border: 1px solid var(--edge);
@@ -326,8 +375,8 @@
   figcaption { color: var(--dim); font-size: 13.5px; margin-top: 12px; text-align: center; }
 
   @media (max-width: 640px) {
-    section { padding-top: 64px; padding-bottom: 64px; }
-    header.hero { padding-top: 56px; }
+    section { padding-top: 44px; padding-bottom: 44px; }
+    header.hero { padding-top: 36px; }
     .spec div { flex-direction: column; gap: 4px; }
     .spec dt, .spec b { flex: none; }
   }
@@ -352,6 +401,7 @@
       <a href="#why" class="hide-sm">Why Ferry</a>
       <a href="#compare" class="hide-sm">Compare</a>
       <a href="#setup" class="hide-sm">Setup</a>
+      <a href="#wireless" class="hide-sm">Wireless</a>
       <a href="#faq" class="hide-sm">FAQ</a>
       <a href="https://github.com/ramanbanka/ferry-releases">GitHub</a>
     </div>
@@ -373,14 +423,17 @@
   </div>
   <p class="meta">
     <!-- release.sh rewrites both. A stale version reads worse than none at all. -->
-    v<strong data-ferry-version>0.3.0</strong> ·
-    <span data-ferry-date>30 July 2026</span> ·
+    v<strong data-ferry-version>0.4.0</strong> ·
+    <span data-ferry-date>1 August 2026</span> ·
     <a href="#requirements">Apple Silicon · macOS 11+</a>
   </p>
 
 </header>
 
-<section class="wrap" style="padding-top:72px;padding-bottom:96px">
+<!-- The illustration belongs to the hero, so it must not be its own snap target: scrolling
+     from the top would stop between a headline and the picture of what it describes. Not
+     folded into <header> itself because the hero is width-constrained and the figure is not. -->
+<section class="wrap no-snap" style="padding-top:40px;padding-bottom:64px">
   <figure>
     <!-- A drawing, not a screen capture — said so in the caption. The volume names and
          sizes come from a real mount, so nothing here is invented. -->
@@ -567,7 +620,7 @@
         </tr>
         <tr>
           <td>Wireless</td>
-          <td class="me"><span class="tick">Yes*</span> <span style="color:var(--dim)">(soon)</span></td>
+          <td class="me"><span class="tick">Yes</span></td>
           <td><span class="cross">No</span></td>
           <td><span class="cross">No</span></td>
           <td><span class="tick">Yes</span></td>
@@ -634,6 +687,9 @@
       </div>
     </div>
   </div>
+  <p class="legend">
+    No cable? <a href="#wireless">Set up wireless instead</a>.
+  </p>
 </section>
 
 <section class="wrap" id="requirements">
@@ -643,7 +699,7 @@
     <div><b>Mac</b><span><strong>Apple Silicon only</strong> — M1 or later. Intel Macs are not supported.</span></div>
     <div><b>macOS</b><span>11 Big Sur or newer</span></div>
     <div><b>Phone</b><span>Any Android with USB debugging. No need to install anything on your phone.</span></div>
-    <div><b>Cable</b><span>One that carries data — many USB-C cables only charge.</span></div>
+    <div><b>Cable</b><span>One that carries data — many USB-C cables only charge. Not needed over Wi-Fi.</span></div>
   </div>
 </section>
 
@@ -704,16 +760,74 @@
   </div>
 </section>
 
+<section class="wrap" id="wireless">
+  <span class="eyebrow">Wireless</span>
+  <h2>Leave the cable behind</h2>
+  <p class="lead">
+    Pair your phone once and it mounts over Wi-Fi whenever it is on the same network as your
+    Mac. Needs <b>Android 11</b> or newer.
+  </p>
+
+  <div class="install-cols">
+    <div class="route">
+      <h3>On the phone</h3>
+      <p class="route-note">Three steps, and the first is the same one USB debugging needs:</p>
+      <div class="steps">
+        <div class="step glass">
+          <div class="n">1</div>
+          <div><p>Turn on developer options: <b>Settings → About phone</b>, then tap <b>Build
+          number</b> seven times.</p></div>
+        </div>
+        <div class="step glass">
+          <div class="n">2</div>
+          <div><p><b>Settings → Developer options → Wireless debugging</b>, and turn it
+          on.</p></div>
+        </div>
+        <div class="step glass">
+          <div class="n">3</div>
+          <div><p>Tap the words <b>Wireless debugging</b> — not the switch — then <b>Pair
+          device with pairing code</b>. A six-digit code appears; leave it showing.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="route">
+      <h3>On your Mac</h3>
+      <p class="route-note">While that code is still showing:</p>
+      <div class="code">
+        <div class="code-bar">
+          <span class="tl"></span><span class="tl"></span><span class="tl"></span>
+          <span style="margin-left:6px">Terminal</span>
+          <button class="copy" type="button" data-copy>Copy</button>
+        </div>
+        <pre><code><span class="p">ferry</span> pair</code></pre>
+      </div>
+      <p class="route-note">
+        Type the six digits if it asks. That is the whole setup — Ferry finds the phone by
+        itself from then on.
+      </p>
+    </div>
+  </div>
+
+  <div class="tradeoff">
+    <p><b>Wi-Fi is up to 9x slower than a cable.</b> Browsing and opening files stay close to
+    normal; copying large files is where you feel it. Playing a higher-resolution video
+    straight from the phone, or seeking into the middle of one, may buffer.</p>
+    <p>You do not have to choose, though: plug in and Ferry moves to the cable on its own,
+    unplug and it goes back to Wi-Fi.</p>
+  </div>
+</section>
+
 <section class="wrap" id="faq">
   <span class="eyebrow">FAQ</span>
   <h2>Questions</h2>
 
-  <details class="faq"><summary>Is it really free?</summary>
+  <details class="faq"><summary>Is Ferry really free?</summary>
     <p>Yes. No paid tier, no trial, and no feature held back. No account, no sign-up,
     and nothing to register — install it and it works.</p></details>
 
-  <details class="faq"><summary>Why isn't it open source?</summary>
-    <p>It may be one day; it isn't yet. The binary is free to use either way. If that rules
+  <details class="faq"><summary>Why isn't Ferry open source?</summary>
+    <p>Ferry may be one day; it isn't yet. The binary is free to use either way. If that rules
     it out for you, <a href="https://openmtp.ganeshrvel.com/">OpenMTP</a> is open source and
     worth a look.</p></details>
 
@@ -733,7 +847,7 @@
       <code>brew install --cask ferry</code> will work on its own.
     </p></details>
 
-  <details class="faq"><summary>Is it signed/trusted by Apple?</summary>
+  <details class="faq"><summary>Is Ferry signed by Apple?</summary>
     <p>Not yet — that needs Apple's Developer ID, which costs $99 a year and I haven't
     justified it for a brand-new free tool. If Ferry gets traction I'll buy it and this
     friction goes away. Homebrew installs work because the cask clears the download flag for
@@ -741,42 +855,84 @@
     turn off Gatekeeper or SIP.</p></details>
 
   <details class="faq"><summary>Does anything leave my Mac?</summary>
-    <p>No. Ferry talks to the phone over the cable and serves the files to Finder on your
-    own machine. No account, no cloud, and no telemetry in the app.</p>
+    <p>No. Ferry talks to the phone over the cable or your Wi-Fi and serves the files to
+    Finder on your own machine — over Wi-Fi it goes between your phone and your Mac and
+    nowhere else. No account, no cloud, and no telemetry in the app.</p>
     <p>
       Don't take my word for it — you can watch Ferry's network activity yourself with
       <a href="https://obdev.at/products/littlesnitch/">Little Snitch</a> or
       <a href="https://objective-see.org/products/lulu.html">LuLu</a>.
     </p></details>
 
-  <details class="faq"><summary>How is it faster than the alternatives?</summary>
+  <details class="faq"><summary>How is Ferry faster than the alternatives?</summary>
     <p>Two reasons. Most alternatives speak MTP, which asks the phone for one file at a
-    time — that is why directory listings crawl and everything waits. Ferry uses ADB, the
-    channel Android's own developer tools run on, and adds its own optimisations and
-    caching on top. It also does less: copy-based tools move a whole file before you can
-    touch it, while Ferry serves the bytes an app actually asks for, so opening or seeking
-    in a large file does not wait on the rest of it.</p></details>
+    time — that is why directory listings crawl and everything waits. Ferry uses ADB, a
+    faster channel that Android's own developer tools run on.</p>
+    <p>Second, Ferry adds its own optimisations, caching and prediction, which multiply the
+    speed ADB offers.</p>
+    <p>Ferry also does less: copy-based tools move a whole file before you can touch it,
+    while Ferry serves the bytes an app actually asks for, so opening or seeking in a large
+    file does not wait on the rest of it.</p></details>
 
-  <details class="faq"><summary>Wireless?</summary>
-    <p>Not yet. USB only for now.</p></details>
+  <details class="faq"><summary>Will Ferry drain the battery or slow the phone?</summary>
+    <p>Ferry reads and writes only when something asks for a file. Idle, Ferry does nothing
+    but check whether the phone is still attached — and on a cable, the phone is charging
+    while it does.</p>
+    <p>Over Wi-Fi there is no cable to charge from, so it does use some battery.</p></details>
 
-  <details class="faq"><summary>Will it drain the battery or slow the phone?</summary>
-    <p>Ferry reads and writes only when something asks it to. Idle, it does nothing but check
-    whether the phone is still attached — and the phone charges while plugged in.</p></details>
-
-  <details class="faq"><summary>What if I unplug it mid-copy?</summary>
+  <details class="faq"><summary>What if I unplug my phone mid-copy?</summary>
     <p>That transfer fails and Finder says so. Ferry unmounts the volume and waits; plug the
     phone back in and it returns on its own. Anything already written stays written.</p></details>
 
-  <details class="faq"><summary>How do I remove it?</summary>
+  <details class="faq"><summary>How do I remove Ferry?</summary>
     <p>
-      If you installed with Homebrew, run <code>"brew uninstall --cask ferry"</code>. It
+      If you installed with Homebrew, run <code class="cmd">brew uninstall --cask ferry</code>. It
       stops the agent and unmounts your phone before removing anything.
     </p>
     <p>
-      If you installed manually, run <code>"ferry disable"</code> first, then delete
-      <code>"/usr/local/bin/ferry"</code>.
+      If you installed manually, run <code class="cmd">ferry disable</code> first, then
+      <code class="cmd">sudo rm /usr/local/bin/ferry</code>.
     </p></details>
+</section>
+
+<section class="wrap" id="troubleshooting">
+  <span class="eyebrow">Help</span>
+  <h2>Troubleshooting</h2>
+
+  <details class="faq"><summary>My phone does not appear in Finder</summary>
+    <p>Unlock it and look for <b>“Allow USB debugging?”</b> — Android asking whether to trust
+    this Mac. Over Wi-Fi, check the phone is awake and on the same network.</p>
+    <p>If the cable is in and nothing happens, try a different one: many USB-C cables carry
+    power only.</p></details>
+
+  <details class="faq"><summary>It worked before, but not now</summary>
+    <p>Run <code class="cmd">ferry status</code> — it says whether Ferry can still see the
+    phone. If it cannot, unplug and plug back in, or check the phone is unlocked.</p>
+    <p>One other cause worth knowing: another Android transfer app running at the same time
+    can take the connection. Quit it and Ferry picks the phone up again.</p></details>
+
+  <details class="faq"><summary>A video stutters or buffers</summary>
+    <p>Over Wi-Fi, the file needs more than the network is carrying. Plug the cable in and it
+    keeps playing from where it was.</p></details>
+
+  <details class="faq"><summary>Is my phone connected, and over what?</summary>
+    <p><code class="cmd">ferry status</code> lists every volume that is mounted and says
+    whether each is served over USB or Wi-Fi, along with the phones Ferry can currently
+    see.</p></details>
+
+  <details class="faq"><summary>Something looks stuck</summary>
+    <p><code class="cmd">ferry log</code> follows what Ferry is doing as it happens, the same
+    way <code>tail -f</code> would. It says when a phone was noticed, mounted, or gave up
+    answering, which is usually enough to explain a volume that did not appear.</p>
+    <p><code class="cmd">ferry restart</code> stops Ferry and starts it again, remounting
+    whatever is connected. Anything already written to the phone stays written.</p></details>
+
+  <details class="faq"><summary>Can I stop Ferry without uninstalling it?</summary>
+    <p><code class="cmd">ferry stop</code> stops it until you start it again, or until your
+    next login. To keep it from starting at login at all, use
+    <code class="cmd">ferry disable</code> — and <code class="cmd">ferry enable</code> brings
+    it back.</p>
+    <p><code class="cmd">ferry --help</code> lists everything else.</p></details>
 </section>
 
 <footer class="wrap">
@@ -787,6 +943,7 @@
       <a href="#compare">Compare</a>
       <a href="#setup">Setup</a>
       <a href="#requirements">Requirements</a>
+      <a href="#troubleshooting">Troubleshooting</a>
     </div>
     <div class="col">
       <b>Project</b>
@@ -807,29 +964,13 @@
 </footer>
 
 <script>
-  // Scroll snapping is only pleasant for sections that fit. Anything taller than the
-  // viewport opts out, or the reader gets pulled back to its top while trying to read the
-  // bottom. Re-measured on resize because the threshold moves with the window.
-  const snapTargets = document.querySelectorAll('header.hero, section, footer');
-  const remeasure = () => {
-    for (const el of snapTargets) {
-      el.classList.toggle('no-snap', el.offsetHeight > window.innerHeight * 0.92);
-    }
-  };
-  remeasure();
-  let t;
-  window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(remeasure, 150); });
-
-  // Heights are not final at load: webfonts settle and the version fetch below can reflow
-  // the hero. Measuring once left the hero snapping at 876px inside an 813px viewport.
-  // ResizeObserver catches every later change; the fallback covers browsers without it.
-  if (window.ResizeObserver) {
-    const ro = new ResizeObserver(() => { clearTimeout(t); t = setTimeout(remeasure, 100); });
-    for (const el of snapTargets) ro.observe(el);
-  } else {
-    setTimeout(remeasure, 1200);
-  }
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
+  // No JavaScript is needed for the scroll snapping: `scroll-snap-align: start` puts one
+  // point at each section's top, which is all that is wanted, and a section taller than the
+  // viewport scrolls through its own body freely because it has no point below that top.
+  // An earlier version measured every section on load, resize, font settle and via a
+  // ResizeObserver, to strip the snap point from anything over 92% of the viewport. That was
+  // solving a problem `start` does not have, and it removed snapping from the longest
+  // sections — the ones whose boundaries a reader most wants to land on.
 
   // Show the current release, asked of GitHub rather than baked in. The markup carries the
   // version release.sh wrote, so the page is still correct with JavaScript off or if this
