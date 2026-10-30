@@ -10,7 +10,7 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://ramanbanka.github.io/ferry/">
 <meta name="theme-color" content="#0b0f14">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2314b8a6'/%3E%3Crect x='10' y='7' width='12' height='18' rx='2.5' fill='%230b0f14'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"%3E%3Cdefs%3E%3ClinearGradient id="bg" x1="0" y1="0" x2="1" y2="1"%3E%3Cstop offset="0" stop-color="%232dd4bf"/%3E%3Cstop offset="1" stop-color="%230891b2"/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x="40" y="40" width="944" height="944" rx="210" fill="url%28%23bg%29"/%3E %3Crect x="250" y="300" width="330" height="220" rx="22" fill="%23ffffff"/%3E %3Crect x="274" y="324" width="282" height="172" rx="8" fill="%230e7490"/%3E %3Cpath d="M214 536 h402 a16 16 0 0 1 -16 22 h-370 a16 16 0 0 1 -16 -22 z" fill="%23ffffff"/%3E %3Crect x="636" y="290" width="150" height="268" rx="28" fill="%23ffffff"/%3E %3Crect x="656" y="324" width="110" height="196" rx="8" fill="%230e7490"/%3E %3Cpath d="M661 452 a50 50 0 0 1 100 0 z" fill="%233ddc84"/%3E %3Cline x1="681" y1="404" x2="670" y2="384" stroke="%233ddc84" stroke-width="8" stroke-linecap="round"/%3E %3Cline x1="741" y1="404" x2="752" y2="384" stroke="%233ddc84" stroke-width="8" stroke-linecap="round"/%3E %3Ccircle cx="691" cy="428" r="6" fill="%230e7490"/%3E%3Ccircle cx="731" cy="428" r="6" fill="%230e7490"/%3E %3Cpath d="M196 586 h632 l-78 150 h-476 z" fill="%230b1f2a"/%3E %3Cpath d="M176 812 q84 -60 168 0 t168 0 t168 0 t168 0" fill="none" stroke="%23ffffff" stroke-width="40" stroke-linecap="round" opacity=".92"/%3E %3C/svg%3E">
 <style>
   /* Teal-on-slate, deliberately not the blue/green of the tools Ferry is compared with.
      Glass surfaces: translucent panels over a soft aurora, with a hairline top highlight
@@ -387,14 +387,7 @@
 <nav class="nav">
   <div class="nav-in">
     <a class="brand" href="#top">
-      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
-        <rect width="32" height="32" rx="8" fill="url(#bg)"/>
-        <rect x="10" y="7" width="12" height="18" rx="2.5" fill="#0b0f14" opacity=".85"/>
-        <rect x="11.6" y="9" width="8.8" height="12.5" rx="1" fill="#2dd4bf" opacity=".9"/>
-        <defs><linearGradient id="bg" x1="0" y1="0" x2="32" y2="32">
-          <stop stop-color="#2dd4bf"/><stop offset="1" stop-color="#22d3ee"/>
-        </linearGradient></defs>
-      </svg>
+      <svg width="26" height="26" viewBox="0 0 1024 1024" aria-hidden="true"><defs><linearGradient id="brandbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#0891b2"/></linearGradient></defs><rect x="40" y="40" width="944" height="944" rx="210" fill="url(#brandbg)"/> <rect x="250" y="300" width="330" height="220" rx="22" fill="#ffffff"/> <rect x="274" y="324" width="282" height="172" rx="8" fill="#0e7490"/> <path d="M214 536 h402 a16 16 0 0 1 -16 22 h-370 a16 16 0 0 1 -16 -22 z" fill="#ffffff"/> <rect x="636" y="290" width="150" height="268" rx="28" fill="#ffffff"/> <rect x="656" y="324" width="110" height="196" rx="8" fill="#0e7490"/> <path d="M661 452 a50 50 0 0 1 100 0 z" fill="#3ddc84"/> <line x1="681" y1="404" x2="670" y2="384" stroke="#3ddc84" stroke-width="8" stroke-linecap="round"/> <line x1="741" y1="404" x2="752" y2="384" stroke="#3ddc84" stroke-width="8" stroke-linecap="round"/> <circle cx="691" cy="428" r="6" fill="#0e7490"/><circle cx="731" cy="428" r="6" fill="#0e7490"/> <path d="M196 586 h632 l-78 150 h-476 z" fill="#0b1f2a"/> <path d="M176 812 q84 -60 168 0 t168 0 t168 0 t168 0" fill="none" stroke="#ffffff" stroke-width="40" stroke-linecap="round" opacity=".92"/> </svg>
       Ferry
     </a>
     <div class="nav-links">
@@ -403,19 +396,22 @@
       <a href="#setup" class="hide-sm">Setup</a>
       <a href="#wireless" class="hide-sm">Wireless</a>
       <a href="#faq" class="hide-sm">FAQ</a>
+      <!-- release.sh refuses to publish while this is the placeholder. -->
+      <a href="https://ko-fi.com/ramanbanka" data-support>Support Ferry</a>
       <a href="https://github.com/ramanbanka/ferry-releases">GitHub</a>
     </div>
   </div>
 </nav>
 
 <header class="hero wrap" id="top">
-  <span class="pill"><span class="dot"></span> Free · No cloud, no account</span>
+  <span class="pill"><span class="dot"></span> Free · Cable or Wi-Fi · No cloud, no account</span>
   <h1>
     <span>Mount an Android phone on your Mac.</span>
     <span>Browse it in Finder, <span class="grad">like a USB drive.</span></span>
   </h1>
   <p class="tagline">
-    No app to open, no files to copy first. Plug it in and it is simply there.
+    No app to open, no files to copy first. Plug it in, or just be on the same Wi-Fi, and it
+    is simply there.
   </p>
   <div class="cta">
     <a class="btn btn-primary" href="#install">Install now</a>
@@ -423,8 +419,8 @@
   </div>
   <p class="meta">
     <!-- release.sh rewrites both. A stale version reads worse than none at all. -->
-    v<strong data-ferry-version>0.4.0</strong> ·
-    <span data-ferry-date>1 August 2026</span> ·
+    v<strong data-ferry-version>0.5.0</strong> ·
+    <span data-ferry-date>30 October 2026</span> ·
     <a href="#requirements">Apple Silicon · macOS 11+</a>
   </p>
 
@@ -764,8 +760,9 @@
   <span class="eyebrow">Wireless</span>
   <h2>Leave the cable behind</h2>
   <p class="lead">
-    Pair your phone once and it mounts over Wi-Fi whenever it is on the same network as your
-    Mac. Needs <b>Android 11</b> or newer.
+    Used the cable before? Just turn on <b>Wireless debugging</b>, and your phone mounts over
+    Wi-Fi whenever it is on the same network as your Mac. Never used the cable? Pair once by QR
+    code, below. Needs <b>Android 11</b> or newer.
   </p>
 
   <div class="install-cols">
@@ -785,15 +782,15 @@
         </div>
         <div class="step glass">
           <div class="n">3</div>
-          <div><p>Tap the words <b>Wireless debugging</b> — not the switch — then <b>Pair
-          device with pairing code</b>. A six-digit code appears; leave it showing.</p></div>
+          <div><p>Tap the words <b>Wireless debugging</b> — not the switch. Leave that screen
+          open.</p></div>
         </div>
       </div>
     </div>
 
     <div class="route">
       <h3>On your Mac</h3>
-      <p class="route-note">While that code is still showing:</p>
+      <p class="route-note">Then, on the Mac:</p>
       <div class="code">
         <div class="code-bar">
           <span class="tl"></span><span class="tl"></span><span class="tl"></span>
@@ -803,19 +800,15 @@
         <pre><code><span class="p">ferry</span> pair</code></pre>
       </div>
       <p class="route-note">
-        Type the six digits if it asks. That is the whole setup — Ferry finds the phone by
-        itself from then on.
+        Choose <b>Pair a new device</b>, then on the phone tap <b>Pair device with QR code</b>
+        and point it at the code on your screen. That is the whole setup — about five seconds,
+        and Ferry finds the phone by itself from then on.
       </p>
     </div>
   </div>
 
-  <div class="tradeoff">
-    <p><b>Wi-Fi is up to 9x slower than a cable.</b> Browsing and opening files stay close to
-    normal; copying large files is where you feel it. Playing a higher-resolution video
-    straight from the phone, or seeking into the middle of one, may buffer.</p>
-    <p>You do not have to choose, though: plug in and Ferry moves to the cable on its own,
-    unplug and it goes back to Wi-Fi.</p>
-  </div>
+  <p class="route-note" style="margin-top:28px">You do not have to choose between the two: plug in and Ferry moves to
+  the cable on its own, unplug and it carries on over Wi-Fi — even in the middle of a copy.</p>
 </section>
 
 <section class="wrap" id="faq">
@@ -824,10 +817,12 @@
 
   <details class="faq"><summary>Is Ferry really free?</summary>
     <p>Yes. No paid tier, no trial, and no feature held back. No account, no sign-up,
-    and nothing to register — install it and it works.</p></details>
+    and nothing to register — install it and it works.</p>
+    <p>If it saves you time, you can <a href="https://ko-fi.com/ramanbanka" data-support>support
+    Ferry</a>. It is never asked of you in the app.</p></details>
 
   <details class="faq"><summary>Why isn't Ferry open source?</summary>
-    <p>Ferry may be one day; it isn't yet. The binary is free to use either way. If that rules
+    <p>Ferry is free to use, but its source is not published. If that rules
     it out for you, <a href="https://openmtp.ganeshrvel.com/">OpenMTP</a> is open source and
     worth a look.</p></details>
 
@@ -881,8 +876,10 @@
     <p>Over Wi-Fi there is no cable to charge from, so it does use some battery.</p></details>
 
   <details class="faq"><summary>What if I unplug my phone mid-copy?</summary>
-    <p>That transfer fails and Finder says so. Ferry unmounts the volume and waits; plug the
-    phone back in and it returns on its own. Anything already written stays written.</p></details>
+    <p>If Wireless debugging is on, nothing happens: Ferry carries the copy on over Wi-Fi
+    and it finishes. Otherwise that copy fails and Finder says so, and a file it was replacing
+    keeps its old contents — the new one goes to a hidden file first and takes over only once it
+    is complete. Plug the phone back in and the volume returns on its own.</p></details>
 
   <details class="faq"><summary>How do I remove Ferry?</summary>
     <p>
@@ -961,6 +958,11 @@
     </div>
   </div>
   © 2026 Raman Banka
+  <p style="color:var(--dim);font-size:12px;margin-top:8px">The Android robot is reproduced or
+  modified from work created and shared by Google and used according to terms described in the
+  <a href="https://creativecommons.org/licenses/by/3.0/">Creative Commons 3.0 Attribution
+  License</a>. Android is a trademark of Google LLC; Mac is a trademark of Apple Inc. Ferry is
+  not affiliated with either.</p>
 </footer>
 
 <script>
