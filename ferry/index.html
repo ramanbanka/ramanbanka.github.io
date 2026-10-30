@@ -709,21 +709,15 @@
   <div class="install-cols">
     <div class="route">
       <h3>With Homebrew <span class="tag">Recommended</span></h3>
-      <p class="route-note">Three lines, then you are done:</p>
+      <p class="route-note">One line, then you are done:</p>
       <div class="code">
     <div class="code-bar">
       <span class="tl"></span><span class="tl"></span><span class="tl"></span>
       <span style="margin-left:6px">Terminal</span>
       <button class="copy" type="button" data-copy>Copy</button>
     </div>
-<pre><code><span class="c"># Point Homebrew at Ferry's tap</span>
-<span class="p">brew</span> tap ramanbanka/ferry
-
-<span class="c"># Trust the tap — needed once per Mac</span>
-<span class="p">brew</span> trust ramanbanka/ferry
-
-<span class="c"># Installs dependencies, sets Ferry to start at login</span>
-<span class="p">brew</span> install --cask ferry</code></pre>
+<pre><code><span class="c"># Installs Ferry and starts it, now and at every login</span>
+<span class="p">brew</span> install --cask ramanbanka/ferry/ferry</code></pre>
 </div>
     </div>
     <div class="route">
@@ -826,20 +820,11 @@
     it out for you, <a href="https://openmtp.ganeshrvel.com/">OpenMTP</a> is open source and
     worth a look.</p></details>
 
-  <details class="faq"><summary>Why do I need a custom tap and "brew trust"?</summary>
+  <details class="faq"><summary>Why the long name, ramanbanka/ferry/ferry?</summary>
     <p>
-      Because Ferry is not in Homebrew's own cask repository yet. Anything not in it has to
-      be published as a <em>tap</em> — a third-party source you add yourself — which is what
-      <code>brew tap ramanbanka/ferry</code> does. <code>brew trust</code> is then Homebrew
-      asking whether you are happy for it to run that tap's install steps, which it needs to
-      because installing Ferry registers a background agent rather than just copying a file
-      into place. Both are once per Mac.
-    </p>
-    <p>
-      Getting into the main repository takes more than working software: Homebrew asks for a
-      project to be at least 30 days old and to show public interest beyond its author. Ferry
-      is newer than that, so the tap is where it lives for now — and once it is accepted,
-      <code>brew install --cask ferry</code> will work on its own.
+      Ferry is not in Homebrew's own list of apps yet, so it comes from Ferry's own source.
+      The full name tells Homebrew where to find it and that you trust it, in one step.
+      Once Ferry is in Homebrew's list, <code>brew install --cask ferry</code> will work too.
     </p></details>
 
   <details class="faq"><summary>Is Ferry signed by Apple?</summary>
