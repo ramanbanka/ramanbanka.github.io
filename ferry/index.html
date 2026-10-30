@@ -429,61 +429,378 @@
 <!-- The illustration belongs to the hero, so it must not be its own snap target: scrolling
      from the top would stop between a headline and the picture of what it describes. Not
      folded into <header> itself because the hero is width-constrained and the figure is not. -->
+<!-- Ferry demo: drawn in HTML, played by a short script. The banner and Finder wording is what
+     Ferry and Finder really show; the phone, file names and pictures are made up. -->
 <section class="wrap no-snap" style="padding-top:40px;padding-bottom:64px">
-  <figure>
-    <!-- A drawing, not a screen capture — said so in the caption. The volume names and
-         sizes come from a real mount, so nothing here is invented. -->
-    <svg viewBox="0 0 760 232" role="img"
-         aria-label="Illustration of a Finder window. Under Locations in the sidebar,
-                     alongside Macintosh HD, are two volumes named MyAndroid and
-                     MyAndroid_SD_card. The first is selected and its folders are listed:
-                     Alarms, Android, DCIM, Documents, Download, Movies, Music, Pictures.">
+  <figure class="demo" id="demo" data-view="empty" data-viewer="none" data-sheet="none"
+          data-cable="out" aria-describedby="demo-steps">
+
+    <!-- The pictures, drawn once and reused by every thumbnail and viewer. -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
       <defs>
-        <style>
-          .w  { fill: var(--bg-2); }
-          .sd { fill: var(--glass); }
-          .br { fill: var(--edge); }
-          .lb { fill: var(--dim); font: 700 9px -apple-system, sans-serif; letter-spacing: .08em; }
-          .it { fill: var(--fg); font: 12px -apple-system, sans-serif; }
-          .ft { fill: var(--dim); font: 11px -apple-system, sans-serif; }
-          .sel { fill: var(--accent); opacity: .16; }
-          .vol { fill: var(--accent); }
-          .hd { fill: var(--dim); opacity: .5; }
-        </style>
+        <linearGradient id="g-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7dd3fc"/><stop offset="1" stop-color="#e0f2fe"/></linearGradient>
+        <linearGradient id="g-dusk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#312e81"/><stop offset="1" stop-color="#f472b6"/></linearGradient>
+        <linearGradient id="g-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0ea5e9"/><stop offset="1" stop-color="#0369a1"/></linearGradient>
       </defs>
-      <rect class="w" x="0" y="0" width="760" height="232" rx="14"/>
-      <rect class="sd" x="0" y="0" width="216" height="232" rx="14"/>
-      <rect class="br" x="0" y="0" width="760" height="36" rx="14"/>
-      <rect class="br" x="0" y="26" width="760" height="10"/>
-      <circle cx="22" cy="18" r="5" class="hd"/>
-      <circle cx="40" cy="18" r="5" class="hd"/>
-      <circle cx="58" cy="18" r="5" class="hd"/>
-      <text class="ft" x="88" y="22" font-weight="650">Finder</text>
-
-      <text class="lb" x="22" y="70">LOCATIONS</text>
-      <rect class="hd" x="22" y="84" width="12" height="12" rx="3"/>
-      <text class="it" x="44" y="94">Macintosh HD</text>
-
-      <rect class="sel" x="10" y="108" width="196" height="26" rx="8"/>
-      <rect class="vol" x="22" y="115" width="12" height="12" rx="3"/>
-      <text class="it" x="44" y="125" font-weight="650">MyAndroid</text>
-
-      <rect class="vol" x="22" y="146" width="12" height="12" rx="3"/>
-      <text class="it" x="44" y="156">MyAndroid_SD_card</text>
-
-      <text class="it" x="250" y="74">Alarms</text>
-      <text class="it" x="250" y="102">Android</text>
-      <text class="it" x="250" y="130">DCIM</text>
-      <text class="it" x="250" y="158">Documents</text>
-      <text class="it" x="480" y="74">Download</text>
-      <text class="it" x="480" y="102">Movies</text>
-      <text class="it" x="480" y="130">Music</text>
-      <text class="it" x="480" y="158">Pictures</text>
-      <text class="ft" x="250" y="200">107 GB volume — 6.9 GB available</text>
+      <symbol id="p-mtn" viewBox="0 0 120 80"><rect width="120" height="80" fill="url(#g-sky)"/><circle cx="92" cy="22" r="10" fill="#fde047"/><path d="M0 80 L38 30 L62 58 L80 40 L120 80Z" fill="#475569"/><path d="M38 30 L46 40 L34 42Z" fill="#f8fafc"/><path d="M0 80 L30 60 L60 80Z" fill="#334155"/></symbol>
+      <symbol id="p-beach" viewBox="0 0 120 80"><rect width="120" height="80" fill="url(#g-sky)"/><rect y="40" width="120" height="22" fill="url(#g-sea)"/><path d="M0 62 Q60 54 120 62 V80 H0Z" fill="#fcd34d"/><circle cx="26" cy="20" r="8" fill="#fef08a"/></symbol>
+      <symbol id="p-city" viewBox="0 0 120 80"><rect width="120" height="80" fill="url(#g-dusk)"/><path d="M0 80 V52 H14 V40 H26 V56 H38 V30 H52 V48 H64 V36 H78 V54 H90 V44 H104 V58 H120 V80Z" fill="#1e1b4b"/><g fill="#fde68a"><rect x="42" y="36" width="3" height="3"/><rect x="68" y="42" width="3" height="3"/><rect x="18" y="46" width="3" height="3"/><rect x="94" y="50" width="3" height="3"/></g></symbol>
+      <symbol id="p-face" viewBox="0 0 120 80"><rect width="120" height="80" fill="#fecaca"/><circle cx="60" cy="32" r="14" fill="#7c2d12"/><path d="M30 80 Q60 44 90 80Z" fill="#0f766e"/></symbol>
+      <symbol id="p-forest" viewBox="0 0 120 80"><rect width="120" height="80" fill="#bbf7d0"/><g fill="#166534"><path d="M14 80 L30 30 L46 80Z"/><path d="M44 80 L62 20 L80 80Z"/><path d="M76 80 L92 36 L108 80Z"/></g></symbol>
+      <symbol id="p-cat" viewBox="0 0 120 80"><rect width="120" height="80" fill="#fde68a"/><path d="M40 70 Q40 34 60 34 Q80 34 80 70Z" fill="#78350f"/><path d="M46 40 L50 24 L58 36Z M74 40 L70 24 L62 36Z" fill="#78350f"/><circle cx="54" cy="46" r="2.5" fill="#fef3c7"/><circle cx="66" cy="46" r="2.5" fill="#fef3c7"/></symbol>
+      <symbol id="d-pdf" viewBox="0 0 48 60"><path d="M4 2 H32 L44 14 V58 H4Z" fill="#fff" stroke="#cbd5e1" stroke-width="2"/><path d="M32 2 V14 H44" fill="#e2e8f0"/><rect x="4" y="38" width="40" height="12" fill="#dc2626"/><text x="24" y="47.5" fill="#fff" font-size="9" font-weight="700" font-family="-apple-system,sans-serif" text-anchor="middle">PDF</text><g fill="#cbd5e1"><rect x="10" y="20" width="22" height="2"/><rect x="10" y="26" width="28" height="2"/><rect x="10" y="32" width="18" height="2"/></g></symbol>
+      <symbol id="d-doc" viewBox="0 0 48 60"><path d="M4 2 H32 L44 14 V58 H4Z" fill="#fff" stroke="#cbd5e1" stroke-width="2"/><path d="M32 2 V14 H44" fill="#e2e8f0"/><rect x="4" y="38" width="40" height="12" fill="#2563eb"/><text x="24" y="47.5" fill="#fff" font-size="9" font-weight="700" font-family="-apple-system,sans-serif" text-anchor="middle">DOCX</text><g fill="#cbd5e1"><rect x="10" y="20" width="28" height="2"/><rect x="10" y="26" width="24" height="2"/><rect x="10" y="32" width="28" height="2"/></g></symbol>
+      <symbol id="d-xls" viewBox="0 0 48 60"><path d="M4 2 H32 L44 14 V58 H4Z" fill="#fff" stroke="#cbd5e1" stroke-width="2"/><path d="M32 2 V14 H44" fill="#e2e8f0"/><rect x="4" y="38" width="40" height="12" fill="#16a34a"/><text x="24" y="47.5" fill="#fff" font-size="9" font-weight="700" font-family="-apple-system,sans-serif" text-anchor="middle">XLSX</text><g fill="none" stroke="#cbd5e1" stroke-width="1.5"><rect x="10" y="18" width="28" height="16"/><path d="M10 26 H38 M24 18 V34"/></g></symbol>
     </svg>
-    <figcaption>Plug the phone in and it shows up as an external volume — and its SD card as a second one — exactly as a USB flash drive would.</figcaption>
+
+    <div class="demo-stage" role="img"
+         aria-label="Animation: a phone is plugged into a Mac and appears in the Finder sidebar
+                     with its SD card. Ferry shows a ready banner. The Camera folder shows photos
+                     and videos. A photo opens straight from the phone, a video plays, and a PDF
+                     from the Documents folder opens. A photo is copied to the Mac and a video is
+                     copied to the phone; halfway through, the cable is pulled, the phone carries
+                     on over Wi-Fi and the copy finishes.">
+      <div class="demo-finder">
+        <div class="demo-bar">
+          <i></i><i></i><i></i>
+          <span class="demo-title" data-title>Finder</span>
+        </div>
+        <div class="demo-body">
+          <aside class="demo-side">
+            <div class="demo-lb">Locations</div>
+            <div class="demo-row"><b class="hd"></b>Macintosh HD</div>
+            <div class="demo-row demo-vol demo-sel"><b></b>My Phone</div>
+            <div class="demo-row demo-vol"><b></b>My Phone SD card</div>
+          </aside>
+          <div class="demo-main">
+            <p class="demo-view demo-empty">Nothing plugged in</p>
+
+            <ul class="demo-view demo-folders">
+              <li class="on">DCIM</li><li>Documents</li><li>Download</li>
+              <li>Movies</li><li>Music</li><li>Pictures</li>
+            </ul>
+
+            <div class="demo-view demo-grid demo-camera">
+              <figure class="f f-pick"><svg><use href="#p-mtn"/></svg><figcaption>IMG_2041.jpg</figcaption></figure>
+              <figure class="f"><svg><use href="#p-beach"/></svg><figcaption>IMG_2042.jpg</figcaption></figure>
+              <figure class="f f-vid"><svg><use href="#p-city"/></svg><i>0:42</i><figcaption>VID_2043.mp4</figcaption></figure>
+              <figure class="f"><svg><use href="#p-face"/></svg><figcaption>IMG_2044.jpg</figcaption></figure>
+              <figure class="f"><svg><use href="#p-forest"/></svg><figcaption>IMG_2045.jpg</figcaption></figure>
+              <figure class="f"><svg><use href="#p-cat"/></svg><figcaption>IMG_2046.jpg</figcaption></figure>
+              <figure class="f f-vid f-new"><svg><use href="#p-beach"/></svg><i>1:15</i><figcaption>Holiday.mov</figcaption></figure>
+            </div>
+
+            <div class="demo-view demo-grid demo-docs">
+              <figure class="f f-doc f-pick"><svg><use href="#d-pdf"/></svg><figcaption>Report.pdf</figcaption></figure>
+              <figure class="f f-doc"><svg><use href="#d-doc"/></svg><figcaption>Notes.docx</figcaption></figure>
+              <figure class="f f-doc"><svg><use href="#d-xls"/></svg><figcaption>Budget.xlsx</figcaption></figure>
+            </div>
+
+            <div class="demo-sheet">
+              <div class="demo-sheet-t" data-sheet-text></div>
+              <div class="demo-track"><div class="demo-fill" data-fill></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="demo-foot">
+          <span data-foot>Macintosh HD</span>
+          <span class="demo-link"><b class="usb">over USB</b><b class="wifi">over Wi-Fi</b></span>
+        </div>
+      </div>
+
+      <!-- A window opened straight from the phone: a photo, a video, a document. -->
+      <div class="demo-viewer">
+        <div class="demo-bar"><i></i><i></i><i></i><span class="demo-title" data-viewer-title></span></div>
+        <div class="demo-pane v-photo"><svg><use href="#p-mtn"/></svg></div>
+        <div class="demo-pane v-video">
+          <svg><use href="#p-city"/></svg>
+          <div class="demo-controls"><b>▶</b><div class="demo-scrub"><span></span></div><em>0:42</em></div>
+        </div>
+        <div class="demo-pane v-pdf">
+          <div class="demo-page">
+            <strong>Quarterly report</strong>
+            <span style="width:92%"></span><span style="width:84%"></span><span style="width:88%"></span>
+            <div class="demo-chart"><i style="--v:40%"></i><i style="--v:65%"></i><i style="--v:52%"></i><i style="--v:85%"></i></div>
+            <span style="width:76%"></span><span style="width:90%"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-phone-col" aria-hidden="true">
+        <div class="demo-phone">
+          <div class="demo-screen">
+            <svg class="demo-waves" viewBox="0 0 40 30"><path d="M4 12a23 23 0 0 1 32 0M10 18a14 14 0 0 1 20 0M16 24a5 5 0 0 1 8 0"/></svg>
+          </div>
+        </div>
+        <svg class="demo-cable" viewBox="0 0 140 120" preserveAspectRatio="none">
+          <path pathLength="1" d="M70 0 V70 Q70 100 40 100 H0"/>
+        </svg>
+      </div>
+
+      <div class="demo-banner">
+        <span class="demo-icon"></span>
+        <div>
+          <strong>My Phone is ready</strong>
+          <span>Phone storage and SD card, over USB. Click to open.</span>
+        </div>
+      </div>
+    </div>
+
+    <ol class="demo-steps" id="demo-steps">
+      <li data-step="1">Plug in</li>
+      <li data-step="2">Browse</li>
+      <li data-step="3">Open photos, videos and documents in place</li>
+      <li data-step="4">Copy both ways</li>
+      <li data-step="5">Pull the cable. It carries on over Wi-Fi</li>
+    </ol>
   </figure>
 </section>
+
+<style>
+  .demo { position: relative; }
+  /* The page's figure rules frame every svg and caption in a figure; these are parts of a drawing. */
+  .demo svg { border: 0; border-radius: 0; }
+  .demo .f figcaption { margin: 0; text-align: center; }
+  .demo-stage {
+    position: relative; display: grid; grid-template-columns: 1fr 140px; align-items: center;
+    padding: 0; overflow: hidden; color: var(--fg);
+  }
+  .demo-finder {
+    background: var(--bg-2); color: var(--fg); border: 1px solid var(--edge-2);
+    border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; font-size: 13px;
+  }
+  .demo-bar { display: flex; align-items: center; gap: 7px; height: 34px; padding: 0 14px;
+              background: var(--glass-2); border-bottom: 1px solid var(--edge); }
+  .demo-bar i { width: 11px; height: 11px; border-radius: 50%; background: var(--dim); opacity: .45; }
+  .demo-title { margin-left: 14px; font-weight: 650; color: var(--muted); white-space: nowrap; }
+  .demo-body { display: grid; grid-template-columns: 170px 1fr; height: 268px; }
+  .demo-side { background: var(--glass); border-right: 1px solid var(--edge); padding: 14px 10px; }
+  .demo-lb { color: var(--dim); font: 700 10px/1 -apple-system, sans-serif; letter-spacing: .08em;
+             text-transform: uppercase; padding: 0 8px 10px; }
+  .demo-row { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 7px; white-space: nowrap; }
+  .demo-row b { width: 12px; height: 12px; border-radius: 3px; background: var(--accent); flex: none; }
+  .demo-row b.hd { background: var(--dim); opacity: .5; }
+  .demo-vol { opacity: 0; transform: translateX(-8px); transition: opacity .4s, transform .4s; }
+  .demo-main { position: relative; overflow: hidden; }
+  .demo-view { position: absolute; inset: 0; margin: 0; padding: 18px 20px; opacity: 0;
+               transition: opacity .35s; pointer-events: none; }
+  .demo-empty { display: grid; place-items: center; color: var(--dim); }
+
+  .demo-folders { list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 200px));
+                  align-content: start; gap: 12px 18px; }
+  .demo-folders li { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 6px; }
+  .demo-folders li::before { content: ""; width: 18px; height: 14px; border-radius: 3px;
+                             background: color-mix(in oklab, var(--accent-2) 70%, var(--bg-2)); }
+  .demo-folders li.on { background: color-mix(in oklab, var(--accent) 18%, transparent); }
+
+  .demo-grid { display: grid; grid-template-columns: repeat(4, 1fr); align-content: start; gap: 12px 14px; }
+  .f { margin: 0; display: grid; justify-items: center; gap: 5px; position: relative;
+       transition: opacity .3s, transform .3s; }
+  .f svg { width: 100%; max-width: 112px; aspect-ratio: 3 / 2; border-radius: 5px !important;
+           box-shadow: 0 1px 3px rgba(0,0,0,.18); }
+  .f-doc svg { aspect-ratio: 4 / 5; max-width: 56px; box-shadow: none; }
+  .f { min-width: 0; }
+  .f figcaption { font-size: 11px; color: var(--muted); white-space: nowrap; padding: 1px 6px; border-radius: 4px;
+                  max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .f i { position: absolute; top: 6px; right: calc(50% - 50px); font: 600 9.5px -apple-system, sans-serif;
+         font-style: normal; color: #fff; background: rgba(0,0,0,.55); border-radius: 4px; padding: 1px 4px; }
+  .f-vid::after { content: "▶"; position: absolute; top: 24%; left: 50%; translate: -50% 0; color: #fff;
+                  font-size: 14px; text-shadow: 0 1px 4px rgba(0,0,0,.5); }
+  .f-new { opacity: 0; transform: scale(.9); }
+  .demo[data-pick] .demo-view .f-pick figcaption { background: var(--accent); color: var(--accent-ink); }
+  .demo[data-pick] .demo-view .f-pick svg { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .demo-sheet { position: absolute; left: 50%; bottom: 14px; width: min(340px, 88%); translate: -50% 0;
+                background: var(--bg-2); color: var(--fg); border: 1px solid var(--edge-2); border-radius: 10px;
+                box-shadow: var(--shadow); padding: 12px 14px; opacity: 0; transform: translateY(10px);
+                transition: opacity .3s, transform .3s; z-index: 2; }
+  .demo-sheet-t { font-size: 12px; margin-bottom: 9px; }
+  .demo[data-sheet=done] .demo-sheet-t { color: var(--accent); font-weight: 650; }
+  .demo-track { height: 6px; border-radius: 3px; background: var(--edge); overflow: hidden; }
+  .demo-fill { height: 100%; width: 0; background: var(--accent); border-radius: 3px; }
+  .demo-foot { display: flex; justify-content: space-between; height: 28px; align-items: center;
+               padding: 0 14px; border-top: 1px solid var(--edge); color: var(--dim); font-size: 11.5px; }
+  .demo-link b { display: none; font-weight: 650; color: var(--accent); }
+
+  .demo-viewer { position: absolute; left: 36%; top: 50%; width: 36%; translate: -30% -50%; z-index: 3;
+                 background: var(--bg-2); color: var(--fg); border: 1px solid var(--edge-2); border-radius: 12px;
+                 box-shadow: 0 24px 60px rgba(0,0,0,.35); overflow: hidden; font-size: 13px;
+                 opacity: 0; transform: scale(.92); transition: opacity .35s, transform .35s; pointer-events: none; }
+  .demo-pane { display: none; position: relative; }
+  .demo-pane > svg { width: 100%; aspect-ratio: 3 / 2; display: block; }
+  .demo-controls { position: absolute; left: 12px; right: 12px; bottom: 10px; display: flex; align-items: center; gap: 10px;
+                   padding: 6px 10px; border-radius: 9px; color: #fff; font-size: 11px;
+                   background: rgba(15,23,42,.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .demo-controls em { font-style: normal; }
+  .demo-scrub { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,.35); overflow: hidden; }
+  .demo-scrub span { display: block; height: 100%; width: 4%; background: #fff; }
+  .demo[data-viewer=video] .demo-scrub span { width: 70%; transition: width 2.3s linear; }
+  .v-pdf { padding: 12px; background: var(--glass); }
+  .demo-page { background: #fff; color: #0f172a; border-radius: 4px; padding: 12px 14px; display: grid; gap: 6px;
+               box-shadow: 0 2px 8px rgba(0,0,0,.15); aspect-ratio: 3 / 2; align-content: start; overflow: hidden; }
+  .demo-page strong { font-size: 13px; margin-bottom: 4px; }
+  .demo-page span { height: 5px; border-radius: 3px; background: #e2e8f0; display: block; }
+  .demo-chart { display: flex; align-items: end; gap: 8px; height: 40px; margin: 2px 0; }
+  .demo-chart i { height: var(--v); }
+  .demo-chart i { flex: 1; background: #14b8a6; border-radius: 3px 3px 0 0; }
+
+  .demo-phone-col { position: relative; height: 100%; display: grid; place-items: center; }
+  .demo-phone { width: 64px; height: 124px; border-radius: 14px; border: 3px solid var(--fg);
+                background: var(--bg-2); padding: 6px; position: relative; z-index: 1; opacity: .9; }
+  .demo-screen { height: 100%; border-radius: 8px; display: grid; place-items: center;
+                 background: color-mix(in oklab, var(--accent) 22%, var(--bg-2)); }
+  .demo-waves { width: 32px; fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round;
+                opacity: 0; transition: opacity .4s; }
+  .demo-cable { position: absolute; left: 0; top: calc(50% + 62px); width: 100%; height: 26%; overflow: visible; }
+  .demo-cable path { fill: none; stroke: var(--muted); stroke-width: 3; stroke-linecap: round;
+                     stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .7s ease; }
+
+  .demo-banner { position: absolute; top: 14px; right: 14px; width: 290px; display: flex; gap: 10px; z-index: 4;
+                 align-items: center; padding: 10px 12px; border-radius: 14px; font-size: 12px;
+                 background: var(--glass-2); color: var(--fg); border: 1px solid var(--edge-2);
+                 box-shadow: var(--shadow); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+                 opacity: 0; transform: translateX(24px); transition: opacity .4s, transform .4s; }
+  .demo-banner strong { display: block; font-size: 12.5px; }
+  .demo-banner span { color: var(--muted); }
+  .demo-icon { flex: none; width: 30px; height: 30px; }
+  .demo-icon svg { width: 30px; height: 30px; display: block; }
+
+  .demo-steps { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-wrap: wrap;
+                justify-content: center; gap: 8px 22px; color: var(--dim); font-size: 13.5px; counter-reset: s; }
+  .demo-steps li { counter-increment: s; transition: color .3s; }
+  .demo-steps li::before { content: counter(s) ". "; }
+  .demo-steps li.on { color: var(--fg); }
+
+  /* What is on screen, set by the script as data attributes on the figure. */
+  .demo:not([data-cable=out]) .demo-cable path { stroke-dashoffset: 0; }
+  .demo[data-cable=wifi] .demo-cable path { stroke-dashoffset: 1; }
+  .demo[data-cable=wifi] .demo-waves { opacity: 1; animation: demo-pulse 1.4s ease-in-out infinite; }
+  .demo:not([data-view=empty]) .demo-vol { opacity: 1; transform: none; }
+  .demo:not([data-view=empty]) .demo-sel { background: color-mix(in oklab, var(--accent) 16%, transparent); }
+  .demo:not([data-view=empty]) .demo-link .usb { display: inline; }
+  .demo[data-cable=wifi] .demo-link .usb { display: none; }
+  .demo[data-cable=wifi] .demo-link .wifi { display: inline; }
+  .demo[data-view=empty]   .demo-empty,
+  .demo[data-view=folders] .demo-folders,
+  .demo[data-view=camera]  .demo-camera,
+  .demo[data-view=docs]    .demo-docs { opacity: 1; }
+  .demo[data-banner] .demo-banner { opacity: 1; transform: none; }
+  .demo:not([data-viewer=none]) .demo-viewer { opacity: 1; transform: none; }
+  .demo[data-viewer=photo] .v-photo, .demo[data-viewer=video] .v-video, .demo[data-viewer=pdf] .v-pdf { display: block; }
+  .demo:not([data-sheet=none]) .demo-sheet { opacity: 1; transform: none; }
+  .demo[data-sheet=done] .f-new { opacity: 1; transform: none; }
+  .demo[data-new] .f-new { opacity: 1; transform: none; }
+  @keyframes demo-pulse { 50% { opacity: .45; } }
+
+  /* On a wide screen the Finder window is centred on the page and the phone sits beside it.
+     Centring the two as one block left the heavy window to the left of the page's middle. */
+  @media (min-width: 761px) {
+    .demo-stage { display: block; max-width: 800px; margin: 0 auto; overflow: visible; }
+    .demo-phone-col { position: absolute; left: 100%; top: 0; bottom: 0; width: 120px; }
+  }
+
+  @media (max-width: 760px) {
+    .demo-stage { grid-template-columns: 1fr 70px; }
+    .demo-body { grid-template-columns: 110px 1fr; height: 250px; }
+    .demo-side { padding: 10px 4px; } .demo-row { font-size: 11.5px; padding: 4px; }
+    .demo-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .demo-camera .f:nth-child(n+6):not(.f-new) { display: none; }
+    .demo-view { padding: 12px; }
+    .demo-viewer { left: 50%; width: 72%; translate: -55% -50%; }
+    .demo-banner { width: 210px; font-size: 11px; }
+    .demo-phone { width: 40px; height: 80px; border-width: 2px; border-radius: 10px; padding: 4px; }
+    .demo-waves { width: 22px; }
+    .demo-cable { top: calc(50% + 40px); }
+  }
+  /* A phone: no room for a sidebar, so the window title says where we are, as Finder does. */
+  @media (max-width: 520px) {
+    .demo-stage { grid-template-columns: 1fr 56px; }
+    .demo-body { grid-template-columns: 1fr; height: 230px; }
+    .demo-side { display: none; }
+    .demo-grid { grid-template-columns: repeat(2, 1fr); gap: 8px 10px; }
+    .demo-camera .f:nth-child(n+4):not(.f-new) { display: none; }
+    .demo-folders { grid-template-columns: 1fr 1fr; }
+    .demo-viewer { left: 50%; width: 86%; translate: -58% -50%; }
+    .demo-banner { width: auto; left: 8px; right: 8px; top: 8px; }
+    .demo-sheet { width: 90%; }
+    .demo-foot span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  }
+</style>
+
+<script>
+  (() => {
+    const demo = document.getElementById('demo');
+    if (!demo) return;
+    const $ = s => demo.querySelector(s);
+    const title = $('[data-title]'), foot = $('[data-foot]');
+    const vtitle = $('[data-viewer-title]'), stext = $('[data-sheet-text]'), fill = $('[data-fill]');
+    const icon = document.querySelector('.brand svg');
+    if (icon) $('.demo-icon').append(icon.cloneNode(true));
+    const steps = [...demo.querySelectorAll('[data-step]')];
+
+    // One row per moment: when, then what the screen shows from then on.
+    // fill is [percent, seconds to get there].
+    const A = '6.9 GB available', C = '6.3 GB available';
+    const plan = [
+      [0,     { step: 0, view: 'empty',   cable: 'out', title: 'Finder',    foot: 'Macintosh HD' }],
+      [1000,  { step: 1, cable: 'usb' }],
+      [1800,  { view: 'folders', banner: 1, title: 'My Phone', foot: '6 items, ' + A }],
+      [4200,  { step: 2, banner: 0, view: 'camera', title: 'Camera', foot: '6 items, ' + A }],
+      [5600,  { step: 3, pick: 1 }],
+      [6200,  { viewer: 'photo', vtitle: 'IMG_2041.jpg' }],
+      [8400,  { viewer: 'video', vtitle: 'VID_2043.mp4', pick: 0 }],
+      [11000, { viewer: 'none', view: 'docs', title: 'Documents', foot: '3 items, ' + A }],
+      [11700, { pick: 1 }],
+      [12300, { viewer: 'pdf', vtitle: 'Report.pdf' }],
+      [14800, { step: 4, viewer: 'none', pick: 0, view: 'camera', title: 'Camera', foot: '6 items, ' + A,
+                sheet: 'copy', stext: 'Copying “IMG_2041.jpg” to “Desktop”', fill: [100, 1.4] }],
+      [16700, { sheet: 'copy', stext: 'Copying “Holiday.mov” to “My Phone”', fill: [0, 0] }],
+      [16800, { fill: [50, 2.6] }],
+      [19600, { step: 5, cable: 'wifi', fill: [100, 3] }],
+      [22800, { sheet: 'done', stext: 'Copied “Holiday.mov”', foot: '7 items, ' + C }],
+      [25200, { sheet: 'none', new: 1 }],
+    ];
+    const LOOP = 27500;
+    let timers = [];
+
+    const set = (k, v) => v ? demo.setAttribute('data-' + k, v) : demo.removeAttribute('data-' + k);
+    const apply = s => {
+      if ('step' in s) steps.forEach(li => li.classList.toggle('on', +li.dataset.step === s.step));
+      for (const k of ['view', 'cable', 'viewer', 'sheet']) if (k in s) set(k, s[k]);
+      for (const k of ['banner', 'pick', 'new']) if (k in s) set(k, s[k] ? '1' : '');
+      if ('title' in s) title.textContent = s.title;
+      if ('foot' in s) foot.textContent = s.foot;
+      if ('vtitle' in s) vtitle.textContent = s.vtitle;
+      if ('stext' in s) stext.textContent = s.stext;
+      if ('fill' in s) { fill.style.transition = `width ${s.fill[1]}s linear`; fill.style.width = s.fill[0] + '%'; }
+    };
+    const reset = () => apply({ step: 0, view: 'empty', cable: 'out', viewer: 'none', sheet: 'none',
+                                banner: 0, pick: 0, new: 0, title: 'Finder', foot: 'Macintosh HD', fill: [0, 0] });
+    const clear = () => { timers.forEach(clearTimeout); timers = []; };
+    // Plays round and round, but only while it is on screen: off screen it stops, and it starts
+    // again from the beginning when it comes back, so nobody walks in on the middle.
+    const run = () => {
+      clear(); reset();
+      for (const [at, s] of plan) timers.push(setTimeout(() => apply(s), at));
+      timers.push(setTimeout(run, LOOP));
+    };
+
+    // With reduced motion: one still frame, the phone mounted with its photos.
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      reset(); apply({ view: 'camera', cable: 'usb', title: 'Camera', foot: '6 items, ' + A });
+      return;
+    }
+    reset();
+    let seen = false;
+    const toggle = () => {
+      const go = seen && !document.hidden;
+      if (go && !timers.length) run();
+      if (!go) { clear(); reset(); }
+    };
+    new IntersectionObserver(e => { seen = e[0].isIntersecting; toggle(); }, { threshold: .4 }).observe(demo);
+    document.addEventListener('visibilitychange', toggle);
+  })();
+</script>
 
 <section class="wrap" id="why">
   <span class="eyebrow">Why Ferry</span>
